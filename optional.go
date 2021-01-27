@@ -1,6 +1,8 @@
 package httpcompression
 
 import (
+	"bufio"
+	"net"
 	"net/http"
 )
 
@@ -9,55 +11,70 @@ import (
 // Currently the supported optional interfaces are http.Hijacker, http.Pusher,
 // and http.CloseNotifier.
 func extend(cw *compressWriter) http.ResponseWriter {
-	switch r := cw.ResponseWriter.(type) {
-	case iHijackPushCloseNotifier:
-		return cwHijackPushCloseNotifier{cw, r}
-	case iPushCloseNotifier:
-		return cwPushCloseNotifier{cw, r}
-	case iHijackPusher:
-		return cwHijackPusher{cw, r}
-	case iHijackCloseNotifier:
-		return cwHijackCloseNotifier{cw, r}
+	switch cw.ResponseWriter.(type) {
+	case interface {
+		http.Hijacker
+		http.Pusher
+		http.CloseNotifier
+	}:
+		return cwHijackPushCloseNotifier{cw}
+	case interface {
+		http.Pusher
+		http.CloseNotifier
+	}:
+		return cwPushCloseNotifier{cw}
+	case interface {
+		http.Hijacker
+		http.Pusher
+	}:
+		return cwHijackPusher{cw}
+	case interface {
+		http.Hijacker
+		http.CloseNotifier
+	}:
+		return cwHijackCloseNotifier{cw}
 	case http.CloseNotifier:
-		return cwCloseNotifier{cw, r}
+		return cwCloseNotifier{cw}
 	case http.Hijacker:
-		return cwHijacker{cw, r}
+		return cwHijacker{cw}
 	case http.Pusher:
-		return cwPusher{cw, r}
+		return cwPusher{cw}
 	default:
 		return cw
 	}
 }
 
-type cwHijacker struct {
-	*compressWriter
-	http.Hijacker
+type cwHijacker struct{ *compressWriter }
+
+func (cw cwHijacker) Hijack() (net.Conn, *bufio.ReadWriter, error) {
+	return cw.ResponseWriter.(http.Hijacker).Hijack()
 }
 
 var _ http.Hijacker = cwHijacker{}
 
-type cwCloseNotifier struct {
-	*compressWriter
-	http.CloseNotifier
+type cwCloseNotifier struct{ *compressWriter }
+
+func (cw cwCloseNotifier) CloseNotify() <-chan bool {
+	return cw.ResponseWriter.(http.CloseNotifier).CloseNotify()
 }
 
 var _ http.CloseNotifier = cwCloseNotifier{}
 
-type cwPusher struct {
-	*compressWriter
-	http.Pusher
+type cwPusher struct{ *compressWriter }
+
+func (cw cwPusher) Push(target string, opts *http.PushOptions) error {
+	return cw.ResponseWriter.(http.Pusher).Push(target, opts)
 }
 
 var _ http.Pusher = cwPusher{}
 
-type cwHijackCloseNotifier struct {
-	*compressWriter
-	iHijackCloseNotifier
-}
+type cwHijackCloseNotifier struct{ *compressWriter }
 
-type iHijackCloseNotifier interface {
-	http.Hijacker
-	http.CloseNotifier
+func (cw cwHijackCloseNotifier) Hijack() (net.Conn, *bufio.ReadWriter, error) {
+	return cwHijacker{cw.compressWriter}.Hijack()
+}
+func (cw cwHijackCloseNotifier) CloseNotify() <-chan bool {
+	return cwCloseNotifier{cw.compressWriter}.CloseNotify()
 }
 
 var (
@@ -65,14 +82,13 @@ var (
 	_ http.CloseNotifier = cwHijackCloseNotifier{}
 )
 
-type cwHijackPusher struct {
-	*compressWriter
-	iHijackPusher
-}
+type cwHijackPusher struct{ *compressWriter }
 
-type iHijackPusher interface {
-	http.Hijacker
-	http.Pusher
+func (cw cwHijackPusher) Hijack() (net.Conn, *bufio.ReadWriter, error) {
+	return cwHijacker{cw.compressWriter}.Hijack()
+}
+func (cw cwHijackPusher) Push(target string, opts *http.PushOptions) error {
+	return cwPusher{cw.compressWriter}.Push(target, opts)
 }
 
 var (
@@ -80,14 +96,13 @@ var (
 	_ http.Pusher   = cwHijackPusher{}
 )
 
-type cwPushCloseNotifier struct {
-	*compressWriter
-	iPushCloseNotifier
-}
+type cwPushCloseNotifier struct{ *compressWriter }
 
-type iPushCloseNotifier interface {
-	http.Pusher
-	http.CloseNotifier
+func (cw cwPushCloseNotifier) Push(target string, opts *http.PushOptions) error {
+	return cwPusher{cw.compressWriter}.Push(target, opts)
+}
+func (cw cwPushCloseNotifier) CloseNotify() <-chan bool {
+	return cwCloseNotifier{cw.compressWriter}.CloseNotify()
 }
 
 var (
@@ -95,15 +110,16 @@ var (
 	_ http.CloseNotifier = cwPushCloseNotifier{}
 )
 
-type cwHijackPushCloseNotifier struct {
-	*compressWriter
-	iHijackPushCloseNotifier
-}
+type cwHijackPushCloseNotifier struct{ *compressWriter }
 
-type iHijackPushCloseNotifier interface {
-	http.Hijacker
-	http.Pusher
-	http.CloseNotifier
+func (cw cwHijackPushCloseNotifier) Hijack() (net.Conn, *bufio.ReadWriter, error) {
+	return cwHijacker{cw.compressWriter}.Hijack()
+}
+func (cw cwHijackPushCloseNotifier) Push(target string, opts *http.PushOptions) error {
+	return cwPusher{cw.compressWriter}.Push(target, opts)
+}
+func (cw cwHijackPushCloseNotifier) CloseNotify() <-chan bool {
+	return cwCloseNotifier{cw.compressWriter}.CloseNotify()
 }
 
 var (
