@@ -10,6 +10,10 @@ import (
 // dynamically exposes some optional interfaces of http.ResponseWriter.
 // Currently the supported optional interfaces are http.Hijacker, http.Pusher,
 // and http.CloseNotifier.
+// This is obviously an horrible way of doing things, but it's really unavoidable
+// without proper language support for interface extension; see
+// https://blog.merovius.de/2017/07/30/the-trouble-with-optional-interfaces.html
+// for details.
 func extend(cw *compressWriter) http.ResponseWriter {
 	switch cw.ResponseWriter.(type) {
 	case interface {
