@@ -213,8 +213,13 @@ func (w *compressWriter) Flush() {
 		return
 	}
 
-	// Flush the compressor, if supported,
-	// note: http.ResponseWriter does not implement Flusher, so we need to call ResponseWriter.Flush anyway.
+	// Flush the compressor, if supported.
+	// note: http.ResponseWriter does not implement Flusher (http.Flusher does not return an error),
+	// so we need to later call ResponseWriter.Flush anyway:
+	// - in case we are bypassing compression, w.w is the parent ResponseWriter, and therefore we skip
+	//   this as the parent ResponseWriter does not implement Flusher.
+	// - in case we are NOT bypassing compression, w.w is the compressor, and therefore we flush the
+	//   compressor and then we flush the parent ResponseWriter.
 	if fw, ok := w.w.(Flusher); ok {
 		_ = fw.Flush()
 	}
