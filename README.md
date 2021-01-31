@@ -75,6 +75,7 @@ compression efficiency of gzip, brotli and zstd in the current implementation.
 
 - Add dictionary support to gzip and brotli (zstd already supports it)
 - Allow to choose dictionary based on content-type
+- Provide additional implementations based on the bindings to the original native implementations
 
 ## License
 
