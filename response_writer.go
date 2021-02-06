@@ -23,6 +23,7 @@ type compressWriter struct {
 	pool   *sync.Pool // pool of buffers (buf []byte); max size of each buf is maxBuf
 
 	w    io.Writer
+	cw   io.Writer // populated only if config.bufferSize > 0 and if compression is enabled for the response
 	enc  string
 	code int    // Saves the WriteHeader value.
 	buf  []byte // Holds the first part of the write before reaching the minSize or the end of the write.
@@ -160,6 +161,11 @@ func (w *compressWriter) startCompress(enc string) error {
 		w.w = comp.comp.Get(w.ResponseWriter)
 		w.enc = enc
 
+		if w.config.bufferSize > 0 {
+			w.cw = w.w
+			w.w = bufio.NewWriterSize(w.w, w.config.bufferSize)
+		}
+
 		n, err := w.w.Write(w.buf)
 
 		// This should never happen (per io.Writer docs), but if the write didn't
@@ -245,6 +251,15 @@ func (w *compressWriter) Flush() {
 	// - in case we are NOT bypassing compression, w.w is the compressor, and therefore we flush the
 	//   compressor and then we flush the parent ResponseWriter.
 	if fw, ok := w.w.(Flusher); ok {
+		_ = fw.Flush()
+	}
+
+	// If the adapter has been configured to use a buffer in front of the compressor, and we are using
+	// compression in the current request, then w.w is be the bufio.Writer, and w.cw is the compressor.
+	// If this is the case, we have already flushed w.w (bufio.Writer) above, so all buffered data should
+	// have been written to the compressor: now let's flush the compressor.
+	// If this is not the case, w.cw is nil so we skip flushing here.
+	if fw, ok := w.cw.(Flusher); ok {
 		_ = fw.Flush()
 	}
 

@@ -139,6 +139,7 @@ type config struct {
 	blacklist    bool
 	prefer       PreferType
 	compressor   comps
+	bufferSize   int
 }
 
 type comps map[string]comp
@@ -199,5 +200,15 @@ func BrotliCompressor(b CompressorProvider) Option {
 func errorOption(err error) Option {
 	return func(_ *config) error {
 		return err
+	}
+}
+
+func Buffer(n int) Option {
+	return func(c *config) error {
+		if n < 0 {
+			return fmt.Errorf("invalid buffer size %v", n)
+		}
+		c.bufferSize = n
+		return nil
 	}
 }
