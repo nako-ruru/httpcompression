@@ -85,6 +85,12 @@ func Adapter(opts ...Option) (func(http.Handler) http.Handler, error) {
 				pool:           bufPool,
 			}
 			defer func() {
+				// Important: gw.Close() must be called *always*, as this will
+				// in turn Close() the compressor. This is important because
+				// it is guaranteed by the CompressorProvider interface, and
+				// because some compressors may be implemented via cgo, and they
+				// may rely on Close() being called to release memory resources.
+				// TODO: expose the error
 				_ = gw.Close() // expose the error
 				*gw = compressWriter{}
 				writerPool.Put(gw)

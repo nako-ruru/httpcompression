@@ -4,19 +4,24 @@ import (
 	"io"
 )
 
+// CompressorProvider is the interface for compression implementations.
 type CompressorProvider interface {
 	// Get returns a writer that writes compressed output to the supplied parent io.Writer.
-	// When Close() is called on the returned io.WriteCloser, it is guaranteed that it will
-	// not be used anymore so implementations can safely recycle the compressor (e.g. put the
-	// WriteCloser in a pool to be reused by a later call to Get).
+	// Callers of Get() must ensure to always call Close() when the compressor is not needed
+	// anymore. Callers of Close() must also ensure to not use the io.WriteCloser once Close()
+	// is called.
+	// Implementations of CompressorProvider are allowed to recycle the compressor (e.g. put the
+	// WriteCloser in a pool to be reused by a later call to Get) when Close() is called.
 	// The returned io.WriteCloser can optionally implement the Flusher interface if it is
 	// able to flush data buffered internally.
 	Get(parent io.Writer) (compressor io.WriteCloser)
 }
 
+// Flusher is an optional interface that can be implemented by the compressors returned by
+// CompressorProvider.Get().
 type Flusher interface {
 	// Flush flushes the data buffered internally by the Writer.
-	// Flush does not need to internally flush the parent Writer.
+	// Implementations of Flush do not need to internally flush the parent Writer.
 	Flush() error
 }
 
