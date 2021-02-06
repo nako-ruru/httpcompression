@@ -60,11 +60,42 @@ func main() {
 		w.Header().Set("Content-Type", "text/plain")
 		io.WriteString(w, "Hello, World")
 	})
-	compress := httpcompression.DefaultAdapter() // Use the default configuration
+	compress, _ := httpcompression.DefaultAdapter() // Use the default configuration
 	http.Handle("/", compress(handler))
 	http.ListenAndServe("0.0.0.0:8080", nil)
 }
 ```
+
+### Pluggable compressors
+
+It is possible to use custom compressor implementations by specifying a `CompressorProvider`
+for each of the encodings the adapter should support. This also allows to support arbitrary
+`Content-Encoding` schemes (e.g. `lzma`, or zstd with a static dictionary - see the
+[examples](example_test.go)).
+
+```go
+pgz, err := httpcompression.Compressor("gzip", 0, pgzip.New(pgzip.Options{Level: 6}))
+if err != nil {
+	log.Fatal(err)
+}
+compress, err := httpcompression.Adapter(
+	// use klauspost/pgzip as compressor for the "gzip" content-encoding, with priority 0
+	pgz,
+)
+if err != nil {
+	log.Fatal(err)
+}
+http.Handle("/", compress(handler))
+```
+
+The `contrib/` directory contains a number of bundled implementations that are ready for use:
+
+| `Content-Encoding` | Provider package                                                                                             | Implementation package                                                      | Notes                                        |
+| ------------------ | ------------------------------------------------------------------------------------------------------------ | --------------------------------------------------------------------------- | -------------------------------------------- |
+| `gzip`             | [contrib/klauspost/gzip](https://pkg.go.dev/github.com/CAFxX/httpcompression/contrib/klauspost/gzip)         | [github.com/klauspost/compress/gzip](https://github.com/klauspost/compress) | Go implementation, faster than compress/gzip |
+| `gzip`             | [contrib/klauspost/pgzip](https://pkg.go.dev/github.com/CAFxX/httpcompression/contrib/klauspost/pgzip)       | [github.com/klauspost/pgzip](https://github.com/klauspost/pgzip)            | Go implementation, parallel compression      |
+| `zstd`             | [contrib/klauspost/zstd](https://pkg.go.dev/github.com/CAFxX/httpcompression/contrib/klauspost/zstd)         | [github.com/klauspost/compress/zstd](https://github.com/klauspost/compress) | Go implementation                            |
+| `brotli`           | [contrib/andybalholm/brotli](https://pkg.go.dev/github.com/CAFxX/httpcompression/contrib/andybalholm/brotli) | [github.com/andybalholm/brotli](https://github.com/andybalholm/brotli)      | Go implementation                            |
 
 ## Benchmark
 
