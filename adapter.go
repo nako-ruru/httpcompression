@@ -188,12 +188,12 @@ func BrotliCompressionLevel(level int) Option {
 
 // GzipCompressor is an option to specify a custom compressor factory for Gzip.
 func GzipCompressor(g CompressorProvider) Option {
-	return Compressor(gzipEncoding, 0, g)
+	return Compressor(gzipEncoding, -200, g)
 }
 
 // BrotliCompressor is an option to specify a custom compressor factory for Brotli.
 func BrotliCompressor(b CompressorProvider) Option {
-	return Compressor(brotli.Encoding, 1, b)
+	return Compressor(brotli.Encoding, -100, b)
 }
 
 func errorOption(err error) Option {
