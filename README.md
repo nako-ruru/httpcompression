@@ -32,7 +32,7 @@ is significantly wider than the original package.**
 ## Install
 
 ```bash
-go get -u github.com/CAFxX/httpcompression
+go get github.com/CAFxX/httpcompression
 ```
 
 ## Usage
