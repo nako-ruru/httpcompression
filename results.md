@@ -9,7 +9,6 @@ The first table lists time to compress the body with the specified encoder and l
 
 The second table lists the size of the resulting compressed body.
 
-<style>.benchstat tbody td:nth-child(1n+2) { text-align: right; padding: 0em 1em; }</style>
 <table class='benchstat'>
 <tr><th>name</th><th>time/op</th>
 <tr><td>Adapter/10/gzip/1/serial-12</td><td>924ns ± 0%</td>
@@ -92,7 +91,6 @@ The second table lists the size of the resulting compressed body.
 <tr><td>Adapter/100000/zstd/4/serial-12</td><td>3.79ms ±11%</td>
 </table>
 
-<style>.benchstat tbody td:nth-child(1n+2) { text-align: right; padding: 0em 1em; }</style>
 <table class='benchstat'>
 <tr><th>name</th><th>%</th>
 <tr><td>Adapter/10/gzip/1/serial-12</td><td>100 ± 0%</td>
