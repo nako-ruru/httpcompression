@@ -52,7 +52,7 @@ var (
 
 const maxBuf = 1 << 16 // maximum size of recycled buffer
 
-// WriteString compresses and appends the given byte slice to the underlying ResponseWriter.
+// Write compresses and appends the given byte slice to the underlying ResponseWriter.
 func (w *compressWriter) Write(b []byte) (int, error) {
 	if w.w != nil {
 		// The responseWriter is already initialized: use it.
