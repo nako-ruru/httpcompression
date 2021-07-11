@@ -7,8 +7,9 @@ import (
 	"net"
 	"net/http"
 	"strconv"
-	"sync"
 )
+
+// 0 < minSize <= maxCache <= bufSize
 
 // compressWriter provides an http.ResponseWriter interface, which gzips
 // bytes before writing them to the underlying response. This doesn't close the
@@ -20,12 +21,12 @@ type compressWriter struct {
 	config config
 	accept codings
 	common []string
-	pool   *sync.Pool // pool of buffers (buf []byte); max size of each buf is maxBuf
 
-	w    io.Writer
-	enc  string
-	code int    // Saves the WriteHeader value.
-	buf  []byte // Holds the first part of the write before reaching the minSize or the end of the write.
+	w     io.Writer
+	enc   string
+	code  int // Saves the WriteHeader value.
+	chunk []byte
+	err   error
 }
 
 var (
@@ -50,61 +51,87 @@ var (
 	_ writeStringer  = compressWriterWithCloseNotify{}
 )
 
-const maxBuf = 1 << 16 // maximum size of recycled buffer
-
-// WriteString compresses and appends the given byte slice to the underlying ResponseWriter.
+// Write compresses and appends the given byte slice to the underlying ResponseWriter.
 func (w *compressWriter) Write(b []byte) (int, error) {
+	if w.err != nil {
+		return 0, w.err
+	}
+
+	if cap(w.chunk) == 0 || (len(w.chunk) == 0 && len(b) >= cap(w.chunk)) {
+		return w.writeChunk(b, false)
+	}
+
+	max := cap(w.chunk) - len(w.chunk)
+	if max >= len(b) {
+		w.chunk = append(w.chunk, b...)
+		return len(b), nil
+	}
+
+	w.chunk = append(w.chunk, b[:max]...)
+	_, err := w.writeChunk(w.chunk, false)
+	if err != nil {
+		return 0, err
+	}
+	w.chunk = w.chunk[:0]
+
+	if len(b[max:]) < cap(w.chunk) {
+		w.chunk = append(w.chunk, b[max:]...)
+		return len(b), nil
+	}
+	_, err = w.writeChunk(b[max:], false)
+	if err != nil {
+		return 0, err
+	}
+	return len(b), nil
+}
+
+func (w *compressWriter) writeChunk(b []byte, final bool) (int, error) {
 	if w.w != nil {
 		// The responseWriter is already initialized: use it.
 		return w.w.Write(b)
 	}
 
-	// Save the write into a buffer for later use in GZIP responseWriter (if content is long enough) or at close with regular responseWriter.
-	// On the first write, w.buf changes from nil to a valid slice
-	// TODO: Add a fast path in case the first buffer is larger than max(512, w.config.minSize), and lower the buf limit for the pool to the same value
-	if w.buf == nil {
-		w.buf, _ = w.pool.Get().([]byte)
-	}
-	w.buf = append(w.buf, b...)
-
-	var (
-		ct = w.Header().Get(contentType)
-		ce = w.Header().Get(contentEncoding)
-		cl = 0
-	)
 	if clv := w.Header().Get(contentLength); clv != "" {
-		cl, _ = strconv.Atoi(clv)
+		cl, _ := strconv.Atoi(clv)
+		if cl < w.config.minSize {
+			goto plain
+		}
+	}
+	if final && (len(b) < w.config.minSize || len(b) == 0) {
+		goto plain
 	}
 
-	// Only continue if they didn't already choose an encoding or a known unhandled content length or type.
-	if ce == "" && (cl == 0 || cl >= w.config.minSize) && (ct == "" || handleContentType(ct, w.config.contentTypes, w.config.blacklist)) {
-		// If the current buffer is less than minSize and a Content-Length isn't set, then wait until we have more data.
-		if len(w.buf) < w.config.minSize && cl == 0 {
-			return len(b), nil
-		}
-		// If the Content-Length is larger than minSize or the current buffer is larger than minSize, then continue.
-		if cl >= w.config.minSize || len(w.buf) >= w.config.minSize {
-			// If a Content-Type wasn't specified, infer it from the current buffer.
-			if ct == "" {
-				ct = http.DetectContentType(w.buf)
-				if ct != "" {
-					// net/http by default performs content sniffing but this is disabled if content-encoding is set.
-					// Since we set content-encoding, if content-type was not set and we successfully sniffed it,
-					// set the content-type.
-					w.Header().Set(contentType, ct)
-				}
-			}
-			if handleContentType(ct, w.config.contentTypes, w.config.blacklist) {
-				enc := preferredEncoding(w.accept, w.config.compressor, w.common, w.config.prefer)
-				if err := w.startCompress(enc); err != nil {
-					return 0, err
-				}
-				return len(b), nil
-			}
-		}
+	if w.Header().Get(contentEncoding) != "" {
+		goto plain
 	}
+
+	{
+		// If a Content-Type wasn't specified, infer it from the current buffer.
+		ct := w.Header().Get(contentType)
+		if ct == "" {
+			ct = http.DetectContentType(b)
+			if ct != "" {
+				// net/http by default performs content sniffing but this is disabled if content-encoding is set.
+				// Since we set content-encoding, if content-type was not set and we successfully sniffed it,
+				// set the content-type.
+				w.Header().Set(contentType, ct)
+			}
+		}
+
+		if handleContentType(ct, w.config.contentTypes, w.config.blacklist) == false {
+			goto plain
+		}
+
+		enc := preferredEncoding(w.accept, w.config.compressor, w.common, w.config.prefer)
+		if err := w.startCompress(b, enc); err != nil {
+			return 0, err
+		}
+		return len(b), nil
+	}
+
+plain:
 	// If we got here, we should not GZIP this response.
-	if err := w.startPlain(); err != nil {
+	if err := w.startPlain(b); err != nil {
 		return 0, err
 	}
 	return len(b), nil
@@ -115,10 +142,14 @@ func (w *compressWriter) Write(b []byte) (int, error) {
 // This makes use of an optional method (WriteString) exposed by the compressors, or by
 // the underlying ResponseWriter.
 func (w *compressWriter) WriteString(s string) (int, error) {
+	if w.err != nil {
+		return 0, w.err
+	}
+
 	// Since WriteString is an optional interface of the compressor, and the actual compressor
 	// is chosen only after the first call to Write, we can't statically know whether the interface
 	// is supported. We therefore have to check dynamically.
-	if ws, _ := w.w.(writeStringer); ws != nil {
+	if ws, _ := w.w.(writeStringer); ws != nil && len(w.chunk) == 0 && len(s) > cap(w.chunk) {
 		// The responseWriter is already initialized and it implements WriteString.
 		return ws.WriteString(s)
 	}
@@ -133,7 +164,7 @@ type writeStringer interface {
 }
 
 // startCompress initializes a compressing writer and writes the buffer.
-func (w *compressWriter) startCompress(enc string) error {
+func (w *compressWriter) startCompress(buf []byte, enc string) error {
 	comp, ok := w.config.compressor[enc]
 	if !ok {
 		panic("unknown compressor")
@@ -147,54 +178,30 @@ func (w *compressWriter) startCompress(enc string) error {
 	w.Header().Del(contentLength)
 
 	// Write the header to gzip response.
-	if w.code != 0 {
-		w.ResponseWriter.WriteHeader(w.code)
-		// Ensure that no other WriteHeader's happen
-		w.code = 0
+	w.writeHeader()
+
+	if len(buf) == 0 {
+		panic("unreachable: empty buffer")
 	}
 
-	// Initialize and flush the buffer into the gzip response if there are any bytes.
-	// If there aren't any, we shouldn't initialize it yet because on Close it will
-	// write the gzip header even if nothing was ever written.
-	if len(w.buf) > 0 {
-		w.w = comp.comp.Get(w.ResponseWriter)
-		w.enc = enc
+	w.w = comp.comp.Get(w.ResponseWriter)
+	w.enc = enc
 
-		n, err := w.w.Write(w.buf)
-
-		// This should never happen (per io.Writer docs), but if the write didn't
-		// accept the entire buffer but returned no specific error, we have no clue
-		// what's going on, so abort just to be safe.
-		if err == nil && n < len(w.buf) {
-			err = io.ErrShortWrite
-		}
-		w.recycleBuffer()
-		return err
-	}
-	return nil
+	_, err := shortWriteChecker{w.w}.Write(buf)
+	w.err = err
+	return err
 }
 
 // startPlain writes to sent bytes and buffer the underlying ResponseWriter without gzip.
-func (w *compressWriter) startPlain() error {
-	if w.code != 0 {
-		w.ResponseWriter.WriteHeader(w.code)
-		// Ensure that no other WriteHeader's happen
-		w.code = 0
-	}
+func (w *compressWriter) startPlain(buf []byte) error {
+	w.writeHeader()
 	w.w = w.ResponseWriter
 	w.enc = ""
 	// If Write was never called then don't call Write on the underlying ResponseWriter.
-	if w.buf == nil {
+	if len(buf) == 0 {
 		return nil
 	}
-	n, err := w.ResponseWriter.Write(w.buf)
-	// This should never happen (per io.Writer docs), but if the write didn't
-	// accept the entire buffer but returned no specific error, we have no clue
-	// what's going on, so abort just to be safe.
-	if err == nil && n < len(w.buf) {
-		err = io.ErrShortWrite
-	}
-	w.recycleBuffer()
+	_, err := shortWriteChecker{w.ResponseWriter}.Write(buf)
 	return err
 }
 
@@ -205,8 +212,31 @@ func (w *compressWriter) WriteHeader(code int) {
 	}
 }
 
+func (w *compressWriter) writeHeader() {
+	if w.code != 0 {
+		w.ResponseWriter.WriteHeader(w.code)
+		// Ensure that no other WriteHeader's happen
+		w.code = 0
+	}
+}
+
 // Close closes the compression Writer.
 func (w *compressWriter) Close() error {
+	defer func() {
+		w.err = errClosed
+	}()
+
+	if w.err != nil {
+		return w.err
+	}
+
+	if len(w.chunk) > 0 {
+		err := w.flushChunk(true)
+		if err != nil {
+			return err
+		}
+	}
+
 	if w.w != nil && w.enc == "" {
 		return nil
 	}
@@ -216,13 +246,15 @@ func (w *compressWriter) Close() error {
 	}
 
 	// compression not triggered yet, write out regular response.
-	err := w.startPlain()
+	err := w.startPlain(nil)
 	// Returns the error if any at write.
 	if err != nil {
 		err = fmt.Errorf("httpcompression: write to regular responseWriter at close gets error: %v", err)
 	}
 	return err
 }
+
+var errClosed = fmt.Errorf("compressWriter already closed")
 
 // Flush flushes the underlying compressor Writer and then the underlying
 // http.ResponseWriter if it is an http.Flusher. This makes compressWriter
@@ -231,9 +263,11 @@ func (w *compressWriter) Close() error {
 // response should be compressed or not (e.g. less than MinSize bytes have
 // been written).
 func (w *compressWriter) Flush() {
-	if w.w == nil {
-		// Flush is thus a no-op until we're certain whether a plain
-		// or compressed response will be served.
+	if w.err != nil {
+		return
+	}
+
+	if err := w.flushChunk(false); err != nil {
 		return
 	}
 
@@ -254,6 +288,17 @@ func (w *compressWriter) Flush() {
 	}
 }
 
+func (w *compressWriter) flushChunk(final bool) error {
+	if len(w.chunk) > 0 && (w.w != nil || final) {
+		_, err := w.writeChunk(w.chunk, final)
+		if err != nil {
+			return err
+		}
+		w.chunk = w.chunk[:0]
+	}
+	return nil
+}
+
 // Hijack implements http.Hijacker. If the underlying ResponseWriter is a
 // Hijacker, its Hijack method is returned. Otherwise an error is returned.
 func (w *compressWriter) Hijack() (net.Conn, *bufio.ReadWriter, error) {
@@ -263,9 +308,14 @@ func (w *compressWriter) Hijack() (net.Conn, *bufio.ReadWriter, error) {
 	return nil, nil, fmt.Errorf("http.Hijacker interface is not supported")
 }
 
-func (w *compressWriter) recycleBuffer() {
-	if cap(w.buf) > 0 && cap(w.buf) <= maxBuf {
-		w.pool.Put(w.buf[:0])
+type shortWriteChecker struct {
+	io.Writer
+}
+
+func (w shortWriteChecker) Write(buf []byte) (int, error) {
+	n, err := w.Writer.Write(buf)
+	if err == nil && n < len(buf) {
+		return 0, io.ErrShortWrite
 	}
-	w.buf = nil
+	return n, err
 }

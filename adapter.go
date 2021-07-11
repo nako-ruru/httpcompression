@@ -59,7 +59,6 @@ func Adapter(opts ...Option) (func(http.Handler) http.Handler, error) {
 		}, nil
 	}
 
-	bufPool := &sync.Pool{}
 	writerPool := &sync.Pool{}
 
 	return func(h http.Handler) http.Handler {
@@ -75,14 +74,17 @@ func Adapter(opts ...Option) (func(http.Handler) http.Handler, error) {
 
 			gw, _ := writerPool.Get().(*compressWriter)
 			if gw == nil {
-				gw = &compressWriter{}
+				const bufSize = 1 << 16
+				gw = &compressWriter{
+					chunk: make([]byte, 0, bufSize),
+				}
 			}
 			*gw = compressWriter{
 				ResponseWriter: w,
 				config:         c,
 				accept:         accept,
 				common:         common,
-				pool:           bufPool,
+				chunk:          gw.chunk,
 			}
 			defer func() {
 				// Important: gw.Close() must be called *always*, as this will
@@ -92,7 +94,7 @@ func Adapter(opts ...Option) (func(http.Handler) http.Handler, error) {
 				// may rely on Close() being called to release memory resources.
 				// TODO: expose the error
 				_ = gw.Close() // expose the error
-				*gw = compressWriter{}
+				*gw = compressWriter{chunk: gw.chunk[:0]}
 				writerPool.Put(gw)
 			}()
 
