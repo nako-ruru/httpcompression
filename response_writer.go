@@ -271,6 +271,10 @@ func (w *compressWriter) Flush() {
 		return
 	}
 
+	if w.w == nil {
+		return
+	}
+
 	// Flush the compressor, if supported.
 	// note: http.ResponseWriter does not implement Flusher (http.Flusher does not return an error),
 	// so we need to later call ResponseWriter.Flush anyway:

@@ -30,6 +30,8 @@ const (
 	// In general there can be no one-size-fits-all value: you will want to measure if a different
 	// minimum size improves end-to-end performance for your workloads.
 	DefaultMinSize = 200
+	minMinSize     = 1
+	defaultBufSize = 1 << 12
 )
 
 // Adapter returns a HTTP handler wrapping function (a.k.a. middleware)
@@ -74,9 +76,8 @@ func Adapter(opts ...Option) (func(http.Handler) http.Handler, error) {
 
 			gw, _ := writerPool.Get().(*compressWriter)
 			if gw == nil {
-				const bufSize = 1 << 16
 				gw = &compressWriter{
-					chunk: make([]byte, 0, bufSize),
+					chunk: make([]byte, 0, defaultBufSize),
 				}
 			}
 			*gw = compressWriter{

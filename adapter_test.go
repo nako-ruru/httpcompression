@@ -570,7 +570,7 @@ func TestGzipHandlerDoubleWriteHeader(t *testing.T) {
 		// Specifically write the header here
 		w.WriteHeader(304)
 		// Ensure that after a Write the header isn't triggered again on close
-		w.Write(nil)
+		w.Write([]byte(testBody))
 	}))
 	wrapper := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w = &panicOnSecondWriteHeaderWriter{
@@ -596,7 +596,7 @@ func TestGzipHandlerDoubleWriteHeader(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Unexpected error reading response body: %v", err)
 	}
-	assert.Empty(t, body)
+	assert.Equal(t, gzipStrLevel(testBody, 6), body)
 	header := rec.Header()
 	assert.Equal(t, "gzip", header.Get("Content-Encoding"))
 	assert.Equal(t, "Accept-Encoding", header.Get("Vary"))
