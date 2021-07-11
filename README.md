@@ -27,6 +27,7 @@ is significantly wider than the original package.**
 - Control whether the client or the server defines the encoder priority
 - Plug in third-party/custom compression schemes or implementations
 - Custom dictionary compression for zstd
+- Low memory alliocations via transparent encoder reuse
 
 ## Install
 
@@ -108,6 +109,9 @@ compression efficiency of gzip, brotli and zstd in the current implementation.
 - Allow to choose dictionary based on content-type
 - Provide additional implementations based on the bindings to the original native implementations
 - Add zstd to DefaultAdapter when the first browser implementation is released
+- Add compressed payload caching (if the same payload has already been compressed and is present in the cache, skip compression)
+- Add write buffering (compress larger chunks at once)
+- Add decompression (if the payload is already compressed but the client supports better algorithms, or does not support a certain algorithm)
 
 ## License
 
