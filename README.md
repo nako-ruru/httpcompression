@@ -1,4 +1,4 @@
-# Golang server middleware for HTTP compression
+# Golang HTTP server middleware for gzip/brotli/zstandard compression
 
 [![Build status](https://github.com/CAFxX/httpcompression/workflows/Build/badge.svg)](https://github.com/CAFxX/httpcompression/actions)
 [![codecov](https://codecov.io/gh/CAFxX/httpcompression/branch/master/graph/badge.svg)](https://codecov.io/gh/CAFxX/httpcompression)
