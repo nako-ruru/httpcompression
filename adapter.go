@@ -61,7 +61,13 @@ func Adapter(opts ...Option) (func(http.Handler) http.Handler, error) {
 		}, nil
 	}
 
-	writerPool := &sync.Pool{}
+	writerPool := &sync.Pool{
+		New: func() interface{} {
+			return &compressWriter{
+				chunk: make([]byte, 0, defaultBufSize),
+			}
+		},
+	}
 
 	return func(h http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -74,12 +80,7 @@ func Adapter(opts ...Option) (func(http.Handler) http.Handler, error) {
 				return
 			}
 
-			gw, _ := writerPool.Get().(*compressWriter)
-			if gw == nil {
-				gw = &compressWriter{
-					chunk: make([]byte, 0, defaultBufSize),
-				}
-			}
+			gw := writerPool.Get().(*compressWriter)
 			*gw = compressWriter{
 				ResponseWriter: w,
 				config:         c,
