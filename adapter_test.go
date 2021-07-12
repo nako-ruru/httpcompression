@@ -607,7 +607,7 @@ func TestGzipHandlerDoubleVary(t *testing.T) {
 		w.Write([]byte(testBody))
 	}))
 	wrapper := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Add("Vary", "Accept-Encoding")
+		w.Header().Add("Vary", "accept-encoding")
 		w.Header().Add("Vary", "X-Something")
 		handler.ServeHTTP(w, r)
 	})
@@ -624,7 +624,7 @@ func TestGzipHandlerDoubleVary(t *testing.T) {
 	header := rec.Header()
 	assert.Equal(t, "gzip", header.Get("Content-Encoding"))
 	// assert no duplicate Vary: Accept-Encoding
-	assert.Equal(t, []string{"Accept-Encoding", "X-Something"}, header.Values("Vary"))
+	assert.Equal(t, []string{"accept-encoding", "X-Something"}, header.Values("Vary"))
 }
 
 func TestStatusCodes(t *testing.T) {

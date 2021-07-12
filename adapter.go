@@ -108,8 +108,9 @@ func Adapter(opts ...Option) (func(http.Handler) http.Handler, error) {
 }
 
 func addVaryHeader(h http.Header, value string) {
+	value = http.CanonicalHeaderKey(value)
 	for _, v := range h.Values(vary) {
-		if v == value {
+		if http.CanonicalHeaderKey(v) == value {
 			return
 		}
 	}
