@@ -442,8 +442,6 @@ func TestGzipHandlerContentLength(t *testing.T) {
 		{len(testBody), [][]byte{testBodyBytes[:200], testBodyBytes[200:]}, false},
 		// without a defined Content-Length it should still gzip
 		{0, [][]byte{testBodyBytes[:200], testBodyBytes[200:]}, false},
-		// simulate a HEAD request with an empty write (to populate headers)
-		{len(testBody), [][]byte{nil}, true},
 	}
 
 	// httptest.NewRecorder doesn't give you access to the Content-Length
@@ -1013,6 +1011,34 @@ func TestWriteStringEquivalence(t *testing.T) {
 				assert.Equal(t, ws.Body.Bytes(), w.Body.Bytes(), "response body mismatch")
 			})
 		}
+	}
+}
+
+func TestMethods(t *testing.T) {
+	t.Parallel()
+	adapter, _ := DefaultAdapter()
+	handler := adapter(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set(contentLength, strconv.Itoa(len(testBody)))
+		if r.Method != http.MethodHead {
+			w.Write([]byte(testBody))
+		}
+	}))
+	for _, method := range []string{http.MethodGet, http.MethodPost, http.MethodOptions, http.MethodHead} {
+		t.Run(method, func(t *testing.T) {
+			req, _ := http.NewRequest(method, "/", nil)
+			req.Header.Set("Accept-Encoding", "gzip")
+			res := httptest.NewRecorder()
+			handler.ServeHTTP(res, req)
+			if method == http.MethodHead {
+				assert.Zero(t, res.Body.Len())
+				assert.Equal(t, "", res.Header().Get("Content-Encoding"))
+				assert.Equal(t, strconv.Itoa(len(testBody)), res.Header().Get("Content-Length"))
+			} else {
+				assert.NotZero(t, res.Body.Len())
+				assert.Equal(t, "gzip", res.Header().Get("Content-Encoding"))
+				assert.Equal(t, "", res.Header().Get("Content-Length"))
+			}
+		})
 	}
 }
 
