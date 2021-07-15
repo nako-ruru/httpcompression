@@ -92,10 +92,11 @@ http.Handle("/", compress(handler))
 The `contrib/` directory contains a number of bundled implementations that are ready for use:
 
 | `Content-Encoding` | Provider package                                                                                             | Implementation package                                                      | Notes                                        |
-| ------------------ | ------------------------------------------------------------------------------------------------------------ | --------------------------------------------------------------------------- | -------------------------------------------- |
+|--------------------|--------------------------------------------------------------------------------------------------------------|-----------------------------------------------------------------------------|----------------------------------------------|
 | `gzip`             | [contrib/klauspost/gzip](https://pkg.go.dev/github.com/CAFxX/httpcompression/contrib/klauspost/gzip)         | [github.com/klauspost/compress/gzip](https://github.com/klauspost/compress) | Go implementation, faster than compress/gzip |
 | `gzip`             | [contrib/klauspost/pgzip](https://pkg.go.dev/github.com/CAFxX/httpcompression/contrib/klauspost/pgzip)       | [github.com/klauspost/pgzip](https://github.com/klauspost/pgzip)            | Go implementation, parallel compression      |
 | `zstd`             | [contrib/klauspost/zstd](https://pkg.go.dev/github.com/CAFxX/httpcompression/contrib/klauspost/zstd)         | [github.com/klauspost/compress/zstd](https://github.com/klauspost/compress) | Go implementation                            |
+| `zstd`             | [contrib/valyala/gozstd](https://pkg.go.dev/github.com/CAFxX/httpcompression/contrib/valyala/gozstd)         | [github.com/valyala/gozstd](https://github.com/valyala/gozstd)              | cgo/native implementation                    |
 | `brotli`           | [contrib/andybalholm/brotli](https://pkg.go.dev/github.com/CAFxX/httpcompression/contrib/andybalholm/brotli) | [github.com/andybalholm/brotli](https://github.com/andybalholm/brotli)      | Go implementation                            |
 
 ## Benchmark

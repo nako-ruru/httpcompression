@@ -15,10 +15,12 @@ import (
 
 	"github.com/CAFxX/httpcompression/contrib/andybalholm/brotli"
 	"github.com/CAFxX/httpcompression/contrib/klauspost/zstd"
+	"github.com/CAFxX/httpcompression/contrib/valyala/gozstd"
 	"github.com/stretchr/testify/assert"
 
 	ibrotli "github.com/andybalholm/brotli"
 	kpzstd "github.com/klauspost/compress/zstd"
+	vzstd "github.com/valyala/gozstd"
 )
 
 const (
@@ -1017,7 +1019,7 @@ func TestWriteStringEquivalence(t *testing.T) {
 func BenchmarkAdapter(b *testing.B) {
 	for _, size := range []int{10, 100, 1000, 10000, 100000} {
 		b.Run(fmt.Sprintf("%d", size), func(b *testing.B) {
-			for ae, maxq := range map[string]int{"gzip": 9, "br": 11, "zstd": 4} {
+			for ae, maxq := range map[string]int{"gzip": 9, "br": 11, "zstd": 4, "zstd-native": 22} {
 				if size < DefaultMinSize {
 					maxq = 1
 				}
@@ -1068,6 +1070,8 @@ func benchmark(b *testing.B, parallel bool, size int, ae string, d int) {
 		enc, err = brotli.New(brotli.Options{Quality: d})
 	case "zstd":
 		enc, err = zstd.New(kpzstd.WithEncoderLevel(kpzstd.EncoderLevel(d)))
+	case "zstd-native":
+		enc, err = gozstd.New(vzstd.WriterParams{CompressionLevel: d})
 	}
 	if err != nil {
 		b.Fatal(err)
@@ -1099,7 +1103,6 @@ func benchmark(b *testing.B, parallel bool, size int, ae string, d int) {
 			for pb.Next() {
 				res.reset()
 				handler.ServeHTTP(res, req)
-				b.ReportMetric(float64(res.b*100)/float64(size), "%")
 			}
 		})
 	} else {

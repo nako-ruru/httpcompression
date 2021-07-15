@@ -7,4 +7,6 @@ require (
 	github.com/klauspost/compress v1.11.7
 	github.com/klauspost/pgzip v1.2.5
 	github.com/stretchr/testify v1.3.0
+	github.com/valyala/gozstd v1.11.0
+	github.com/valyala/zstd v1.3.0
 )
