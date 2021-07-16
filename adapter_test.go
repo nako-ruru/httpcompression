@@ -957,14 +957,14 @@ func TestWriteStringNoCompressionDynamic(t *testing.T) {
 	t.Run("WriteString", func(t *testing.T) {
 		w := &discardResponseWriterWithWriteString{}
 		h.ServeHTTP(w, r)
-		if w.s != len(testBody) || w.b != len(testBody) { // first WriteString falls back to Write
+		if w.s != len(testBody) || w.b != int64(len(testBody)) { // first WriteString falls back to Write
 			t.Fatalf("WriteString not called: %+v", w)
 		}
 	})
 	t.Run("Write", func(t *testing.T) {
 		w := &discardResponseWriter{}
 		h.ServeHTTP(w, r)
-		if w.b != len(testBody)*2 {
+		if w.b != int64(len(testBody))*2 {
 			t.Fatalf("Write not called: %+v", w)
 		}
 	})
@@ -1107,17 +1107,19 @@ func benchmark(b *testing.B, parallel bool, size int, ae string, d int) {
 		})
 	} else {
 		res := &discardResponseWriter{}
+		var sz int64
 		for i := 0; i < b.N; i++ {
 			res.reset()
 			handler.ServeHTTP(res, req)
-			b.ReportMetric(float64(res.b*100)/float64(size), "%")
+			sz += res.b
 		}
+		b.ReportMetric(float64(sz)/float64(b.N)/float64(size)*100.0, "%")
 	}
 }
 
 type discardResponseWriter struct {
 	h http.Header
-	b int
+	b int64
 }
 
 func (w *discardResponseWriter) Header() http.Header {
@@ -1128,7 +1130,7 @@ func (w *discardResponseWriter) Header() http.Header {
 }
 
 func (w *discardResponseWriter) Write(b []byte) (int, error) {
-	w.b += len(b)
+	w.b += int64(len(b))
 	return len(b), nil
 }
 
