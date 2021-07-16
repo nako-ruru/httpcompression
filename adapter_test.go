@@ -107,6 +107,20 @@ func TestGzipHandler(t *testing.T) {
 		assert.Equal(t, brotliStrLevel(testBody, brotli.DefaultCompression), resp.Body.Bytes())
 	}
 
+	// same, but with accept-encoding:zstd
+	{
+		req, _ := http.NewRequest("GET", "/whatever", nil)
+		req.Header.Set("Accept-Encoding", "zstd")
+		resp := httptest.NewRecorder()
+		handler.ServeHTTP(resp, req)
+		res := resp.Result()
+
+		assert.Equal(t, 200, res.StatusCode)
+		assert.Equal(t, "zstd", res.Header.Get("Content-Encoding"))
+		assert.Equal(t, "Accept-Encoding", res.Header.Get("Vary"))
+		assert.Equal(t, zstdStrLevel(testBody, kpzstd.SpeedDefault), resp.Body.Bytes())
+	}
+
 	// same, but with accept-encoding:gzip,br (br wins)
 	{
 		req, _ := http.NewRequest("GET", "/whatever", nil)
@@ -119,6 +133,20 @@ func TestGzipHandler(t *testing.T) {
 		assert.Equal(t, "br", res.Header.Get("Content-Encoding"))
 		assert.Equal(t, "Accept-Encoding", res.Header.Get("Vary"))
 		assert.Equal(t, brotliStrLevel(testBody, brotli.DefaultCompression), resp.Body.Bytes())
+	}
+
+	// same, but with accept-encoding:gzip,br,zstd (zstd wins)
+	{
+		req, _ := http.NewRequest("GET", "/whatever", nil)
+		req.Header.Set("Accept-Encoding", "gzip, br, zstd")
+		resp := httptest.NewRecorder()
+		handler.ServeHTTP(resp, req)
+		res := resp.Result()
+
+		assert.Equal(t, 200, res.StatusCode)
+		assert.Equal(t, "zstd", res.Header.Get("Content-Encoding"))
+		assert.Equal(t, "Accept-Encoding", res.Header.Get("Vary"))
+		assert.Equal(t, zstdStrLevel(testBody, kpzstd.SpeedDefault), resp.Body.Bytes())
 	}
 
 	// same, but with accept-encoding:gzip,br;q=0.5 (gzip wins)
@@ -1051,6 +1079,14 @@ func gzipStrLevel(s string, lvl int) []byte {
 func brotliStrLevel(s string, lvl int) []byte {
 	var b bytes.Buffer
 	w := ibrotli.NewWriterLevel(&b, lvl)
+	io.WriteString(w, s)
+	w.Close()
+	return b.Bytes()
+}
+
+func zstdStrLevel(s string, lvl kpzstd.EncoderLevel) []byte {
+	var b bytes.Buffer
+	w, _ := kpzstd.NewWriter(&b, kpzstd.WithEncoderLevel(lvl))
 	io.WriteString(w, s)
 	w.Close()
 	return b.Bytes()

@@ -7,6 +7,7 @@ import (
 	"sync"
 
 	"github.com/CAFxX/httpcompression/contrib/andybalholm/brotli"
+	"github.com/CAFxX/httpcompression/contrib/klauspost/zstd"
 )
 
 const (
@@ -127,6 +128,7 @@ func DefaultAdapter(opts ...Option) (func(http.Handler) http.Handler, error) {
 	defaults := []Option{
 		GzipCompressionLevel(gzip.DefaultCompression),
 		BrotliCompressionLevel(brotli.DefaultCompression),
+		defaultZstandardCompressor(),
 		MinSize(DefaultMinSize),
 	}
 	opts = append(defaults, opts...)
@@ -195,6 +197,14 @@ func GzipCompressor(g CompressorProvider) Option {
 // BrotliCompressor is an option to specify a custom compressor factory for Brotli.
 func BrotliCompressor(b CompressorProvider) Option {
 	return Compressor(brotli.Encoding, -100, b)
+}
+
+func defaultZstandardCompressor() Option {
+	zstdComp, err := zstd.New()
+	if err != nil {
+		return errorOption(fmt.Errorf("initializing zstd compressor: %w", err))
+	}
+	return Compressor(zstd.Encoding, -50, zstdComp)
 }
 
 func errorOption(err error) Option {

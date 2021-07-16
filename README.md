@@ -42,8 +42,8 @@ any handler (an object which implements the `http.Handler` interface),
 to transparently provide response body compression.
 Note that, despite the name, `httpcompression` automatically compresses using
 Brotli or Gzip, depending on the capabilities of the client (`Accept-Encoding`)
-and the configuration of this handler (by default, both Gzip and Brotli are
-enabled and Brotli is used by default if the client supports both).
+and the configuration of this handler (by default, Zstandard, Brotli and gzip are
+all enabled and, conditional on client support, used in that order of preference).
 
 As a simple example:
 
@@ -109,7 +109,6 @@ compression efficiency of gzip, brotli and zstd in the current implementation.
 - Add dictionary support to gzip and brotli (zstd already supports it)
 - Allow to choose dictionary based on content-type
 - Provide additional implementations based on the bindings to the original native implementations
-- Add zstd to DefaultAdapter when the first browser implementation is released
 - Add compressed payload caching (if the same payload has already been compressed and is present in the cache, skip compression)
 - Add write buffering (compress larger chunks at once)
 - Add decompression (if the payload is already compressed but the client supports better algorithms, or does not support a certain algorithm)
