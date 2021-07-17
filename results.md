@@ -1,6 +1,6 @@
 Results of running
 ```
-go test -count=5 -bench=././././serial | benchstat -html > results.md
+benchstat -html <(go test -count=5 -benchtime=0.2s -bench=././././serial) >results.md
 ```
 
 The benchmark names follow the format `Adapter/(body_size)/(encoder)/(level)/serial-*`.
@@ -9,166 +9,373 @@ The first table lists time to compress the body with the specified encoder and l
 
 The second table lists the size of the resulting compressed body.
 
-<table class='benchstat'>
-<tr><th>name</th><th>time/op</th>
-<tr><td>Adapter/10/gzip/1/serial-12</td><td>924ns ± 0%</td>
-<tr><td>Adapter/10/br/1/serial-12</td><td>933ns ± 5%</td>
-<tr><td>Adapter/10/zstd/1/serial-12</td><td>968ns ± 5%</td>
-<tr><td>Adapter/100/gzip/1/serial-12</td><td>960ns ± 6%</td>
-<tr><td>Adapter/100/br/1/serial-12</td><td>963ns ± 6%</td>
-<tr><td>Adapter/100/zstd/1/serial-12</td><td>975ns ± 6%</td>
-<tr><td>Adapter/1000/gzip/1/serial-12</td><td>30.8µs ±10%</td>
-<tr><td>Adapter/1000/gzip/2/serial-12</td><td>85.9µs ± 5%</td>
-<tr><td>Adapter/1000/gzip/3/serial-12</td><td>85.6µs ± 0%</td>
-<tr><td>Adapter/1000/gzip/4/serial-12</td><td>89.2µs ± 5%</td>
-<tr><td>Adapter/1000/gzip/5/serial-12</td><td>89.3µs ± 0%</td>
-<tr><td>Adapter/1000/gzip/6/serial-12</td><td>91.4µs ± 2%</td>
-<tr><td>Adapter/1000/gzip/7/serial-12</td><td>93.1µs ± 6%</td>
-<tr><td>Adapter/1000/gzip/8/serial-12</td><td>93.4µs ± 6%</td>
-<tr><td>Adapter/1000/gzip/9/serial-12</td><td>93.5µs ± 8%</td>
-<tr><td>Adapter/1000/br/1/serial-12</td><td>27.7µs ± 1%</td>
-<tr><td>Adapter/1000/br/2/serial-12</td><td>42.6µs ±10%</td>
-<tr><td>Adapter/1000/br/3/serial-12</td><td>69.9µs ± 4%</td>
-<tr><td>Adapter/1000/br/4/serial-12</td><td>99.4µs ±12%</td>
-<tr><td>Adapter/1000/br/5/serial-12</td><td>111µs ± 7%</td>
-<tr><td>Adapter/1000/br/6/serial-12</td><td>112µs ± 4%</td>
-<tr><td>Adapter/1000/br/7/serial-12</td><td>141µs ± 4%</td>
-<tr><td>Adapter/1000/br/8/serial-12</td><td>147µs ±19%</td>
-<tr><td>Adapter/1000/br/9/serial-12</td><td>154µs ± 1%</td>
-<tr><td>Adapter/1000/br/10/serial-12</td><td>2.44ms ± 5%</td>
-<tr><td>Adapter/1000/br/11/serial-12</td><td>4.09ms ± 1%</td>
-<tr><td>Adapter/1000/zstd/1/serial-12</td><td>18.1µs ±10%</td>
-<tr><td>Adapter/1000/zstd/2/serial-12</td><td>21.6µs ± 7%</td>
-<tr><td>Adapter/1000/zstd/3/serial-12</td><td>31.2µs ±14%</td>
-<tr><td>Adapter/1000/zstd/4/serial-12</td><td>79.9µs ±14%</td>
-<tr><td>Adapter/10000/gzip/1/serial-12</td><td>134µs ±19%</td>
-<tr><td>Adapter/10000/gzip/2/serial-12</td><td>201µs ± 3%</td>
-<tr><td>Adapter/10000/gzip/3/serial-12</td><td>203µs ± 1%</td>
-<tr><td>Adapter/10000/gzip/4/serial-12</td><td>247µs ±19%</td>
-<tr><td>Adapter/10000/gzip/5/serial-12</td><td>246µs ± 1%</td>
-<tr><td>Adapter/10000/gzip/6/serial-12</td><td>269µs ± 7%</td>
-<tr><td>Adapter/10000/gzip/7/serial-12</td><td>335µs ± 3%</td>
-<tr><td>Adapter/10000/gzip/8/serial-12</td><td>371µs ± 0%</td>
-<tr><td>Adapter/10000/gzip/9/serial-12</td><td>381µs ±11%</td>
-<tr><td>Adapter/10000/br/1/serial-12</td><td>148µs ± 2%</td>
-<tr><td>Adapter/10000/br/2/serial-12</td><td>325µs ±10%</td>
-<tr><td>Adapter/10000/br/3/serial-12</td><td>389µs ± 0%</td>
-<tr><td>Adapter/10000/br/4/serial-12</td><td>557µs ±19%</td>
-<tr><td>Adapter/10000/br/5/serial-12</td><td>614µs ± 2%</td>
-<tr><td>Adapter/10000/br/6/serial-12</td><td>655µs ± 8%</td>
-<tr><td>Adapter/10000/br/7/serial-12</td><td>804µs ± 4%</td>
-<tr><td>Adapter/10000/br/8/serial-12</td><td>823µs ± 7%</td>
-<tr><td>Adapter/10000/br/9/serial-12</td><td>978µs ± 5%</td>
-<tr><td>Adapter/10000/br/10/serial-12</td><td>10.9ms ± 8%</td>
-<tr><td>Adapter/10000/br/11/serial-12</td><td>29.5ms ±14%</td>
-<tr><td>Adapter/10000/zstd/1/serial-12</td><td>74.6µs ±16%</td>
-<tr><td>Adapter/10000/zstd/2/serial-12</td><td>124µs ± 8%</td>
-<tr><td>Adapter/10000/zstd/3/serial-12</td><td>200µs ± 7%</td>
-<tr><td>Adapter/10000/zstd/4/serial-12</td><td>634µs ± 8%</td>
-<tr><td>Adapter/100000/gzip/1/serial-12</td><td>1.12ms ± 9%</td>
-<tr><td>Adapter/100000/gzip/2/serial-12</td><td>1.35ms ± 1%</td>
-<tr><td>Adapter/100000/gzip/3/serial-12</td><td>1.53ms ± 5%</td>
-<tr><td>Adapter/100000/gzip/4/serial-12</td><td>1.73ms ± 6%</td>
-<tr><td>Adapter/100000/gzip/5/serial-12</td><td>1.99ms ± 1%</td>
-<tr><td>Adapter/100000/gzip/6/serial-12</td><td>2.34ms ± 7%</td>
-<tr><td>Adapter/100000/gzip/7/serial-12</td><td>3.80ms ±12%</td>
-<tr><td>Adapter/100000/gzip/8/serial-12</td><td>8.67ms ± 3%</td>
-<tr><td>Adapter/100000/gzip/9/serial-12</td><td>8.96ms ±12%</td>
-<tr><td>Adapter/100000/br/1/serial-12</td><td>1.48ms ±13%</td>
-<tr><td>Adapter/100000/br/2/serial-12</td><td>3.01ms ± 5%</td>
-<tr><td>Adapter/100000/br/3/serial-12</td><td>3.51ms ± 2%</td>
-<tr><td>Adapter/100000/br/4/serial-12</td><td>4.58ms ± 7%</td>
-<tr><td>Adapter/100000/br/5/serial-12</td><td>5.51ms ± 0%</td>
-<tr><td>Adapter/100000/br/6/serial-12</td><td>6.04ms ± 4%</td>
-<tr><td>Adapter/100000/br/7/serial-12</td><td>7.11ms ± 0%</td>
-<tr><td>Adapter/100000/br/8/serial-12</td><td>7.86ms ± 3%</td>
-<tr><td>Adapter/100000/br/9/serial-12</td><td>10.2ms ± 5%</td>
-<tr><td>Adapter/100000/br/10/serial-12</td><td>113ms ±10%</td>
-<tr><td>Adapter/100000/br/11/serial-12</td><td>312ms ± 2%</td>
-<tr><td>Adapter/100000/zstd/1/serial-12</td><td>629µs ± 1%</td>
-<tr><td>Adapter/100000/zstd/2/serial-12</td><td>859µs ± 4%</td>
-<tr><td>Adapter/100000/zstd/3/serial-12</td><td>1.02ms ± 2%</td>
-<tr><td>Adapter/100000/zstd/4/serial-12</td><td>3.79ms ±11%</td>
-</table>
+<table class='benchstat '>
 
-<table class='benchstat'>
-<tr><th>name</th><th>%</th>
-<tr><td>Adapter/10/gzip/1/serial-12</td><td>100 ± 0%</td>
-<tr><td>Adapter/10/br/1/serial-12</td><td>100 ± 0%</td>
-<tr><td>Adapter/10/zstd/1/serial-12</td><td>100 ± 0%</td>
-<tr><td>Adapter/100/gzip/1/serial-12</td><td>100 ± 0%</td>
-<tr><td>Adapter/100/br/1/serial-12</td><td>100 ± 0%</td>
-<tr><td>Adapter/100/zstd/1/serial-12</td><td>100 ± 0%</td>
-<tr><td>Adapter/1000/gzip/1/serial-12</td><td>44.2 ± 0%</td>
-<tr><td>Adapter/1000/gzip/2/serial-12</td><td>41.9 ± 0%</td>
-<tr><td>Adapter/1000/gzip/3/serial-12</td><td>41.7 ± 0%</td>
-<tr><td>Adapter/1000/gzip/4/serial-12</td><td>41.7 ± 0%</td>
-<tr><td>Adapter/1000/gzip/5/serial-12</td><td>41.1 ± 0%</td>
-<tr><td>Adapter/1000/gzip/6/serial-12</td><td>41.1 ± 0%</td>
-<tr><td>Adapter/1000/gzip/7/serial-12</td><td>41.0 ± 0%</td>
-<tr><td>Adapter/1000/gzip/8/serial-12</td><td>41.0 ± 0%</td>
-<tr><td>Adapter/1000/gzip/9/serial-12</td><td>41.0 ± 0%</td>
-<tr><td>Adapter/1000/br/1/serial-12</td><td>45.2 ± 0%</td>
-<tr><td>Adapter/1000/br/2/serial-12</td><td>42.1 ± 0%</td>
-<tr><td>Adapter/1000/br/3/serial-12</td><td>39.9 ± 0%</td>
-<tr><td>Adapter/1000/br/4/serial-12</td><td>39.3 ± 0%</td>
-<tr><td>Adapter/1000/br/5/serial-12</td><td>36.6 ± 0%</td>
-<tr><td>Adapter/1000/br/6/serial-12</td><td>36.8 ± 0%</td>
-<tr><td>Adapter/1000/br/7/serial-12</td><td>36.7 ± 0%</td>
-<tr><td>Adapter/1000/br/8/serial-12</td><td>36.7 ± 0%</td>
-<tr><td>Adapter/1000/br/9/serial-12</td><td>36.7 ± 0%</td>
-<tr><td>Adapter/1000/br/10/serial-12</td><td>37.4 ± 0%</td>
-<tr><td>Adapter/1000/br/11/serial-12</td><td>37.2 ± 0%</td>
-<tr><td>Adapter/1000/zstd/1/serial-12</td><td>43.1 ± 0%</td>
-<tr><td>Adapter/1000/zstd/2/serial-12</td><td>42.2 ± 0%</td>
-<tr><td>Adapter/1000/zstd/3/serial-12</td><td>41.7 ± 0%</td>
-<tr><td>Adapter/1000/zstd/4/serial-12</td><td>41.3 ± 0%</td>
-<tr><td>Adapter/10000/gzip/1/serial-12</td><td>29.6 ± 0%</td>
-<tr><td>Adapter/10000/gzip/2/serial-12</td><td>28.5 ± 0%</td>
-<tr><td>Adapter/10000/gzip/3/serial-12</td><td>28.1 ± 0%</td>
-<tr><td>Adapter/10000/gzip/4/serial-12</td><td>28.2 ± 0%</td>
-<tr><td>Adapter/10000/gzip/5/serial-12</td><td>27.7 ± 0%</td>
-<tr><td>Adapter/10000/gzip/6/serial-12</td><td>27.6 ± 0%</td>
-<tr><td>Adapter/10000/gzip/7/serial-12</td><td>27.2 ± 0%</td>
-<tr><td>Adapter/10000/gzip/8/serial-12</td><td>27.2 ± 0%</td>
-<tr><td>Adapter/10000/gzip/9/serial-12</td><td>27.2 ± 0%</td>
-<tr><td>Adapter/10000/br/1/serial-12</td><td>29.9 ± 0%</td>
-<tr><td>Adapter/10000/br/2/serial-12</td><td>28.1 ± 0%</td>
-<tr><td>Adapter/10000/br/3/serial-12</td><td>27.9 ± 0%</td>
-<tr><td>Adapter/10000/br/4/serial-12</td><td>27.5 ± 0%</td>
-<tr><td>Adapter/10000/br/5/serial-12</td><td>26.0 ± 0%</td>
-<tr><td>Adapter/10000/br/6/serial-12</td><td>25.9 ± 0%</td>
-<tr><td>Adapter/10000/br/7/serial-12</td><td>25.8 ± 0%</td>
-<tr><td>Adapter/10000/br/8/serial-12</td><td>25.8 ± 0%</td>
-<tr><td>Adapter/10000/br/9/serial-12</td><td>25.8 ± 0%</td>
-<tr><td>Adapter/10000/br/10/serial-12</td><td>23.4 ± 0%</td>
-<tr><td>Adapter/10000/br/11/serial-12</td><td>23.1 ± 0%</td>
-<tr><td>Adapter/10000/zstd/1/serial-12</td><td>28.6 ± 0%</td>
-<tr><td>Adapter/10000/zstd/2/serial-12</td><td>28.1 ± 0%</td>
-<tr><td>Adapter/10000/zstd/3/serial-12</td><td>28.0 ± 0%</td>
-<tr><td>Adapter/10000/zstd/4/serial-12</td><td>27.6 ± 0%</td>
-<tr><td>Adapter/100000/gzip/1/serial-12</td><td>27.3 ± 0%</td>
-<tr><td>Adapter/100000/gzip/2/serial-12</td><td>26.2 ± 0%</td>
-<tr><td>Adapter/100000/gzip/3/serial-12</td><td>25.7 ± 0%</td>
-<tr><td>Adapter/100000/gzip/4/serial-12</td><td>25.8 ± 0%</td>
-<tr><td>Adapter/100000/gzip/5/serial-12</td><td>25.0 ± 0%</td>
-<tr><td>Adapter/100000/gzip/6/serial-12</td><td>24.8 ± 0%</td>
-<tr><td>Adapter/100000/gzip/7/serial-12</td><td>24.2 ± 0%</td>
-<tr><td>Adapter/100000/gzip/8/serial-12</td><td>24.1 ± 0%</td>
-<tr><td>Adapter/100000/gzip/9/serial-12</td><td>24.1 ± 0%</td>
-<tr><td>Adapter/100000/br/1/serial-12</td><td>27.6 ± 0%</td>
-<tr><td>Adapter/100000/br/2/serial-12</td><td>25.4 ± 0%</td>
-<tr><td>Adapter/100000/br/3/serial-12</td><td>25.3 ± 0%</td>
-<tr><td>Adapter/100000/br/4/serial-12</td><td>24.9 ± 0%</td>
-<tr><td>Adapter/100000/br/5/serial-12</td><td>23.6 ± 0%</td>
-<tr><td>Adapter/100000/br/6/serial-12</td><td>23.4 ± 0%</td>
-<tr><td>Adapter/100000/br/7/serial-12</td><td>23.3 ± 0%</td>
-<tr><td>Adapter/100000/br/8/serial-12</td><td>23.2 ± 0%</td>
-<tr><td>Adapter/100000/br/9/serial-12</td><td>23.2 ± 0%</td>
-<tr><td>Adapter/100000/br/10/serial-12</td><td>20.2 ± 0%</td>
-<tr><td>Adapter/100000/br/11/serial-12</td><td>19.9 ± 0%</td>
-<tr><td>Adapter/100000/zstd/1/serial-12</td><td>25.9 ± 0%</td>
-<tr><td>Adapter/100000/zstd/2/serial-12</td><td>25.7 ± 0%</td>
-<tr><td>Adapter/100000/zstd/3/serial-12</td><td>25.6 ± 0%</td>
-<tr><td>Adapter/100000/zstd/4/serial-12</td><td>25.3 ± 0%</td>
+
+<tbody>
+
+<tr><th><th>time/op
+<tr><td>Adapter/100/andybalholm-brotli/1/serial-16<td>1.11µs ± 0%
+<tr><td>Adapter/100/google-cbrotli/1/serial-16<td>1.11µs ± 0%
+<tr><td>Adapter/100/klauspost-zstd/1/serial-16<td>1.11µs ± 0%
+<tr><td>Adapter/100/valyala-gozstd/1/serial-16<td>1.12µs ± 1%
+<tr><td>Adapter/100/stdlib-gzip/1/serial-16<td>1.10µs ± 0%
+<tr><td>Adapter/1000/stdlib-gzip/1/serial-16<td>34.5µs ± 1%
+<tr><td>Adapter/1000/stdlib-gzip/2/serial-16<td>102µs ± 1%
+<tr><td>Adapter/1000/stdlib-gzip/3/serial-16<td>102µs ± 1%
+<tr><td>Adapter/1000/stdlib-gzip/4/serial-16<td>105µs ± 1%
+<tr><td>Adapter/1000/stdlib-gzip/5/serial-16<td>105µs ± 1%
+<tr><td>Adapter/1000/stdlib-gzip/6/serial-16<td>106µs ± 2%
+<tr><td>Adapter/1000/stdlib-gzip/7/serial-16<td>108µs ± 6%
+<tr><td>Adapter/1000/stdlib-gzip/8/serial-16<td>109µs ± 2%
+<tr><td>Adapter/1000/stdlib-gzip/9/serial-16<td>107µs ± 2%
+<tr><td>Adapter/1000/andybalholm-brotli/1/serial-16<td>35.4µs ± 0%
+<tr><td>Adapter/1000/andybalholm-brotli/2/serial-16<td>49.5µs ± 1%
+<tr><td>Adapter/1000/andybalholm-brotli/3/serial-16<td>78.0µs ± 0%
+<tr><td>Adapter/1000/andybalholm-brotli/4/serial-16<td>109µs ± 1%
+<tr><td>Adapter/1000/andybalholm-brotli/5/serial-16<td>123µs ± 4%
+<tr><td>Adapter/1000/andybalholm-brotli/6/serial-16<td>124µs ± 0%
+<tr><td>Adapter/1000/andybalholm-brotli/7/serial-16<td>156µs ± 1%
+<tr><td>Adapter/1000/andybalholm-brotli/8/serial-16<td>157µs ± 1%
+<tr><td>Adapter/1000/andybalholm-brotli/9/serial-16<td>175µs ± 1%
+<tr><td>Adapter/1000/andybalholm-brotli/10/serial-16<td>2.84ms ± 0%
+<tr><td>Adapter/1000/andybalholm-brotli/11/serial-16<td>4.69ms ± 0%
+<tr><td>Adapter/1000/google-cbrotli/1/serial-16<td>16.4µs ± 0%
+<tr><td>Adapter/1000/google-cbrotli/2/serial-16<td>17.8µs ± 1%
+<tr><td>Adapter/1000/google-cbrotli/3/serial-16<td>31.8µs ± 1%
+<tr><td>Adapter/1000/google-cbrotli/4/serial-16<td>54.0µs ± 1%
+<tr><td>Adapter/1000/google-cbrotli/5/serial-16<td>60.4µs ± 2%
+<tr><td>Adapter/1000/google-cbrotli/6/serial-16<td>237µs ± 1%
+<tr><td>Adapter/1000/google-cbrotli/7/serial-16<td>75.9µs ± 0%
+<tr><td>Adapter/1000/google-cbrotli/8/serial-16<td>76.0µs ± 1%
+<tr><td>Adapter/1000/google-cbrotli/9/serial-16<td>479µs ± 1%
+<tr><td>Adapter/1000/google-cbrotli/10/serial-16<td>1.91ms ± 0%
+<tr><td>Adapter/1000/google-cbrotli/11/serial-16<td>3.39ms ± 0%
+<tr><td>Adapter/1000/klauspost-zstd/1/serial-16<td>19.5µs ± 1%
+<tr><td>Adapter/1000/klauspost-zstd/2/serial-16<td>24.3µs ± 3%
+<tr><td>Adapter/1000/klauspost-zstd/3/serial-16<td>173µs ±231%
+<tr><td>Adapter/1000/klauspost-zstd/4/serial-16<td>702µs ±235%
+<tr><td>Adapter/1000/valyala-gozstd/1/serial-16<td>13.4µs ± 1%
+<tr><td>Adapter/1000/valyala-gozstd/2/serial-16<td>13.8µs ± 1%
+<tr><td>Adapter/1000/valyala-gozstd/3/serial-16<td>15.7µs ± 3%
+<tr><td>Adapter/1000/valyala-gozstd/4/serial-16<td>15.7µs ± 1%
+<tr><td>Adapter/1000/valyala-gozstd/5/serial-16<td>19.5µs ± 1%
+<tr><td>Adapter/1000/valyala-gozstd/6/serial-16<td>19.7µs ± 1%
+<tr><td>Adapter/1000/valyala-gozstd/7/serial-16<td>24.2µs ± 2%
+<tr><td>Adapter/1000/valyala-gozstd/8/serial-16<td>25.5µs ± 1%
+<tr><td>Adapter/1000/valyala-gozstd/9/serial-16<td>25.9µs ± 1%
+<tr><td>Adapter/1000/valyala-gozstd/10/serial-16<td>26.0µs ± 1%
+<tr><td>Adapter/1000/valyala-gozstd/11/serial-16<td>26.3µs ± 1%
+<tr><td>Adapter/1000/valyala-gozstd/12/serial-16<td>26.4µs ± 2%
+<tr><td>Adapter/1000/valyala-gozstd/13/serial-16<td>31.9µs ± 1%
+<tr><td>Adapter/1000/valyala-gozstd/14/serial-16<td>31.5µs ± 1%
+<tr><td>Adapter/1000/valyala-gozstd/15/serial-16<td>31.6µs ± 1%
+<tr><td>Adapter/1000/valyala-gozstd/16/serial-16<td>58.6µs ± 1%
+<tr><td>Adapter/1000/valyala-gozstd/17/serial-16<td>61.2µs ± 1%
+<tr><td>Adapter/1000/valyala-gozstd/18/serial-16<td>124µs ± 2%
+<tr><td>Adapter/1000/valyala-gozstd/19/serial-16<td>126µs ± 1%
+<tr><td>Adapter/1000/valyala-gozstd/20/serial-16<td>126µs ± 1%
+<tr><td>Adapter/1000/valyala-gozstd/21/serial-16<td>126µs ± 0%
+<tr><td>Adapter/1000/valyala-gozstd/22/serial-16<td>126µs ± 1%
+<tr><td>Adapter/10000/klauspost-zstd/1/serial-16<td>76.8µs ± 1%
+<tr><td>Adapter/10000/klauspost-zstd/2/serial-16<td>103µs ± 4%
+<tr><td>Adapter/10000/klauspost-zstd/3/serial-16<td>157µs ± 1%
+<tr><td>Adapter/10000/klauspost-zstd/4/serial-16<td>667µs ±32%
+<tr><td>Adapter/10000/valyala-gozstd/1/serial-16<td>41.7µs ± 0%
+<tr><td>Adapter/10000/valyala-gozstd/2/serial-16<td>43.7µs ± 1%
+<tr><td>Adapter/10000/valyala-gozstd/3/serial-16<td>58.2µs ± 2%
+<tr><td>Adapter/10000/valyala-gozstd/4/serial-16<td>60.4µs ± 1%
+<tr><td>Adapter/10000/valyala-gozstd/5/serial-16<td>102µs ± 3%
+<tr><td>Adapter/10000/valyala-gozstd/6/serial-16<td>102µs ± 1%
+<tr><td>Adapter/10000/valyala-gozstd/7/serial-16<td>138µs ± 1%
+<tr><td>Adapter/10000/valyala-gozstd/8/serial-16<td>155µs ± 2%
+<tr><td>Adapter/10000/valyala-gozstd/9/serial-16<td>178µs ± 1%
+<tr><td>Adapter/10000/valyala-gozstd/10/serial-16<td>183µs ± 1%
+<tr><td>Adapter/10000/valyala-gozstd/11/serial-16<td>192µs ± 1%
+<tr><td>Adapter/10000/valyala-gozstd/12/serial-16<td>219µs ± 2%
+<tr><td>Adapter/10000/valyala-gozstd/13/serial-16<td>393µs ± 1%
+<tr><td>Adapter/10000/valyala-gozstd/14/serial-16<td>402µs ± 1%
+<tr><td>Adapter/10000/valyala-gozstd/15/serial-16<td>401µs ± 1%
+<tr><td>Adapter/10000/valyala-gozstd/16/serial-16<td>1.31ms ± 0%
+<tr><td>Adapter/10000/valyala-gozstd/17/serial-16<td>1.46ms ± 0%
+<tr><td>Adapter/10000/valyala-gozstd/18/serial-16<td>2.50ms ± 0%
+<tr><td>Adapter/10000/valyala-gozstd/19/serial-16<td>4.98ms ± 1%
+<tr><td>Adapter/10000/valyala-gozstd/20/serial-16<td>4.99ms ± 0%
+<tr><td>Adapter/10000/valyala-gozstd/21/serial-16<td>5.01ms ± 0%
+<tr><td>Adapter/10000/valyala-gozstd/22/serial-16<td>5.06ms ± 1%
+<tr><td>Adapter/10000/stdlib-gzip/1/serial-16<td>145µs ± 1%
+<tr><td>Adapter/10000/stdlib-gzip/2/serial-16<td>232µs ± 1%
+<tr><td>Adapter/10000/stdlib-gzip/3/serial-16<td>239µs ± 1%
+<tr><td>Adapter/10000/stdlib-gzip/4/serial-16<td>262µs ± 1%
+<tr><td>Adapter/10000/stdlib-gzip/5/serial-16<td>289µs ± 0%
+<tr><td>Adapter/10000/stdlib-gzip/6/serial-16<td>306µs ± 0%
+<tr><td>Adapter/10000/stdlib-gzip/7/serial-16<td>389µs ± 1%
+<tr><td>Adapter/10000/stdlib-gzip/8/serial-16<td>430µs ± 1%
+<tr><td>Adapter/10000/stdlib-gzip/9/serial-16<td>427µs ± 0%
+<tr><td>Adapter/10000/andybalholm-brotli/1/serial-16<td>187µs ± 0%
+<tr><td>Adapter/10000/andybalholm-brotli/2/serial-16<td>357µs ± 1%
+<tr><td>Adapter/10000/andybalholm-brotli/3/serial-16<td>462µs ± 2%
+<tr><td>Adapter/10000/andybalholm-brotli/4/serial-16<td>611µs ± 1%
+<tr><td>Adapter/10000/andybalholm-brotli/5/serial-16<td>698µs ± 0%
+<tr><td>Adapter/10000/andybalholm-brotli/6/serial-16<td>726µs ± 2%
+<tr><td>Adapter/10000/andybalholm-brotli/7/serial-16<td>881µs ± 1%
+<tr><td>Adapter/10000/andybalholm-brotli/8/serial-16<td>921µs ± 0%
+<tr><td>Adapter/10000/andybalholm-brotli/9/serial-16<td>1.08ms ± 1%
+<tr><td>Adapter/10000/andybalholm-brotli/10/serial-16<td>11.8ms ± 0%
+<tr><td>Adapter/10000/andybalholm-brotli/11/serial-16<td>31.4ms ± 0%
+<tr><td>Adapter/10000/google-cbrotli/1/serial-16<td>52.1µs ± 1%
+<tr><td>Adapter/10000/google-cbrotli/2/serial-16<td>110µs ± 1%
+<tr><td>Adapter/10000/google-cbrotli/3/serial-16<td>145µs ± 1%
+<tr><td>Adapter/10000/google-cbrotli/4/serial-16<td>243µs ± 1%
+<tr><td>Adapter/10000/google-cbrotli/5/serial-16<td>373µs ± 0%
+<tr><td>Adapter/10000/google-cbrotli/6/serial-16<td>648µs ± 1%
+<tr><td>Adapter/10000/google-cbrotli/7/serial-16<td>500µs ± 0%
+<tr><td>Adapter/10000/google-cbrotli/8/serial-16<td>1.74ms ± 1%
+<tr><td>Adapter/10000/google-cbrotli/9/serial-16<td>2.33ms ± 1%
+<tr><td>Adapter/10000/google-cbrotli/10/serial-16<td>7.24ms ± 0%
+<tr><td>Adapter/10000/google-cbrotli/11/serial-16<td>22.7ms ± 1%
+<tr><td>Adapter/100000/stdlib-gzip/1/serial-16<td>1.25ms ± 0%
+<tr><td>Adapter/100000/stdlib-gzip/2/serial-16<td>1.55ms ± 0%
+<tr><td>Adapter/100000/stdlib-gzip/3/serial-16<td>1.69ms ± 0%
+<tr><td>Adapter/100000/stdlib-gzip/4/serial-16<td>1.92ms ± 0%
+<tr><td>Adapter/100000/stdlib-gzip/5/serial-16<td>2.27ms ± 1%
+<tr><td>Adapter/100000/stdlib-gzip/6/serial-16<td>2.57ms ± 1%
+<tr><td>Adapter/100000/stdlib-gzip/7/serial-16<td>4.19ms ± 1%
+<tr><td>Adapter/100000/stdlib-gzip/8/serial-16<td>9.49ms ± 1%
+<tr><td>Adapter/100000/stdlib-gzip/9/serial-16<td>9.51ms ± 1%
+<tr><td>Adapter/100000/andybalholm-brotli/1/serial-16<td>1.81ms ± 0%
+<tr><td>Adapter/100000/andybalholm-brotli/2/serial-16<td>3.34ms ± 0%
+<tr><td>Adapter/100000/andybalholm-brotli/3/serial-16<td>4.07ms ± 0%
+<tr><td>Adapter/100000/andybalholm-brotli/4/serial-16<td>5.04ms ± 0%
+<tr><td>Adapter/100000/andybalholm-brotli/5/serial-16<td>6.28ms ± 1%
+<tr><td>Adapter/100000/andybalholm-brotli/6/serial-16<td>6.56ms ± 1%
+<tr><td>Adapter/100000/andybalholm-brotli/7/serial-16<td>7.96ms ± 1%
+<tr><td>Adapter/100000/andybalholm-brotli/8/serial-16<td>8.70ms ± 1%
+<tr><td>Adapter/100000/andybalholm-brotli/9/serial-16<td>10.9ms ± 0%
+<tr><td>Adapter/100000/andybalholm-brotli/10/serial-16<td>120ms ± 0%
+<tr><td>Adapter/100000/andybalholm-brotli/11/serial-16<td>346ms ± 0%
+<tr><td>Adapter/100000/google-cbrotli/1/serial-16<td>543µs ± 1%
+<tr><td>Adapter/100000/google-cbrotli/2/serial-16<td>995µs ± 0%
+<tr><td>Adapter/100000/google-cbrotli/3/serial-16<td>1.22ms ± 1%
+<tr><td>Adapter/100000/google-cbrotli/4/serial-16<td>1.79ms ± 1%
+<tr><td>Adapter/100000/google-cbrotli/5/serial-16<td>3.42ms ± 1%
+<tr><td>Adapter/100000/google-cbrotli/6/serial-16<td>3.85ms ± 1%
+<tr><td>Adapter/100000/google-cbrotli/7/serial-16<td>4.55ms ± 1%
+<tr><td>Adapter/100000/google-cbrotli/8/serial-16<td>7.08ms ± 1%
+<tr><td>Adapter/100000/google-cbrotli/9/serial-16<td>10.3ms ± 1%
+<tr><td>Adapter/100000/google-cbrotli/10/serial-16<td>73.7ms ± 1%
+<tr><td>Adapter/100000/google-cbrotli/11/serial-16<td>247ms ± 1%
+<tr><td>Adapter/100000/klauspost-zstd/1/serial-16<td>745µs ± 1%
+<tr><td>Adapter/100000/klauspost-zstd/2/serial-16<td>974µs ± 1%
+<tr><td>Adapter/100000/klauspost-zstd/3/serial-16<td>1.16ms ± 1%
+<tr><td>Adapter/100000/klauspost-zstd/4/serial-16<td>3.81ms ± 1%
+<tr><td>Adapter/100000/valyala-gozstd/1/serial-16<td>480µs ± 0%
+<tr><td>Adapter/100000/valyala-gozstd/2/serial-16<td>502µs ± 1%
+<tr><td>Adapter/100000/valyala-gozstd/3/serial-16<td>684µs ± 1%
+<tr><td>Adapter/100000/valyala-gozstd/4/serial-16<td>635µs ± 3%
+<tr><td>Adapter/100000/valyala-gozstd/5/serial-16<td>1.07ms ± 1%
+<tr><td>Adapter/100000/valyala-gozstd/6/serial-16<td>1.14ms ± 1%
+<tr><td>Adapter/100000/valyala-gozstd/7/serial-16<td>1.61ms ± 1%
+<tr><td>Adapter/100000/valyala-gozstd/8/serial-16<td>1.88ms ± 1%
+<tr><td>Adapter/100000/valyala-gozstd/9/serial-16<td>2.21ms ± 4%
+<tr><td>Adapter/100000/valyala-gozstd/10/serial-16<td>2.30ms ± 1%
+<tr><td>Adapter/100000/valyala-gozstd/11/serial-16<td>2.39ms ± 2%
+<tr><td>Adapter/100000/valyala-gozstd/12/serial-16<td>2.86ms ± 1%
+<tr><td>Adapter/100000/valyala-gozstd/13/serial-16<td>5.39ms ± 2%
+<tr><td>Adapter/100000/valyala-gozstd/14/serial-16<td>5.46ms ± 1%
+<tr><td>Adapter/100000/valyala-gozstd/15/serial-16<td>6.11ms ±14%
+<tr><td>Adapter/100000/valyala-gozstd/16/serial-16<td>19.1ms ± 1%
+<tr><td>Adapter/100000/valyala-gozstd/17/serial-16<td>21.0ms ± 1%
+<tr><td>Adapter/100000/valyala-gozstd/18/serial-16<td>33.0ms ± 1%
+<tr><td>Adapter/100000/valyala-gozstd/19/serial-16<td>64.8ms ± 2%
+<tr><td>Adapter/100000/valyala-gozstd/20/serial-16<td>64.6ms ± 1%
+<tr><td>Adapter/100000/valyala-gozstd/21/serial-16<td>66.0ms ± 4%
+<tr><td>Adapter/100000/valyala-gozstd/22/serial-16<td>65.0ms ± 1%
+<tr><td>&nbsp;
+</tbody>
+
+<tbody>
+
+<tr><th><th>%
+<tr><td>Adapter/100/andybalholm-brotli/1/serial-16<td>100 ± 0%
+<tr><td>Adapter/100/google-cbrotli/1/serial-16<td>100 ± 0%
+<tr><td>Adapter/100/klauspost-zstd/1/serial-16<td>100 ± 0%
+<tr><td>Adapter/100/valyala-gozstd/1/serial-16<td>100 ± 0%
+<tr><td>Adapter/100/stdlib-gzip/1/serial-16<td>100 ± 0%
+<tr><td>Adapter/1000/stdlib-gzip/1/serial-16<td>44.2 ± 0%
+<tr><td>Adapter/1000/stdlib-gzip/2/serial-16<td>41.9 ± 0%
+<tr><td>Adapter/1000/stdlib-gzip/3/serial-16<td>41.7 ± 0%
+<tr><td>Adapter/1000/stdlib-gzip/4/serial-16<td>41.7 ± 0%
+<tr><td>Adapter/1000/stdlib-gzip/5/serial-16<td>41.1 ± 0%
+<tr><td>Adapter/1000/stdlib-gzip/6/serial-16<td>41.1 ± 0%
+<tr><td>Adapter/1000/stdlib-gzip/7/serial-16<td>41.0 ± 0%
+<tr><td>Adapter/1000/stdlib-gzip/8/serial-16<td>41.0 ± 0%
+<tr><td>Adapter/1000/stdlib-gzip/9/serial-16<td>41.0 ± 0%
+<tr><td>Adapter/1000/andybalholm-brotli/1/serial-16<td>45.2 ± 0%
+<tr><td>Adapter/1000/andybalholm-brotli/2/serial-16<td>42.1 ± 0%
+<tr><td>Adapter/1000/andybalholm-brotli/3/serial-16<td>39.9 ± 0%
+<tr><td>Adapter/1000/andybalholm-brotli/4/serial-16<td>39.3 ± 0%
+<tr><td>Adapter/1000/andybalholm-brotli/5/serial-16<td>36.6 ± 0%
+<tr><td>Adapter/1000/andybalholm-brotli/6/serial-16<td>36.8 ± 0%
+<tr><td>Adapter/1000/andybalholm-brotli/7/serial-16<td>36.7 ± 0%
+<tr><td>Adapter/1000/andybalholm-brotli/8/serial-16<td>36.7 ± 0%
+<tr><td>Adapter/1000/andybalholm-brotli/9/serial-16<td>36.7 ± 0%
+<tr><td>Adapter/1000/andybalholm-brotli/10/serial-16<td>37.4 ± 0%
+<tr><td>Adapter/1000/andybalholm-brotli/11/serial-16<td>37.2 ± 0%
+<tr><td>Adapter/1000/google-cbrotli/1/serial-16<td>45.2 ± 0%
+<tr><td>Adapter/1000/google-cbrotli/2/serial-16<td>42.1 ± 0%
+<tr><td>Adapter/1000/google-cbrotli/3/serial-16<td>39.9 ± 0%
+<tr><td>Adapter/1000/google-cbrotli/4/serial-16<td>39.3 ± 0%
+<tr><td>Adapter/1000/google-cbrotli/5/serial-16<td>36.6 ± 0%
+<tr><td>Adapter/1000/google-cbrotli/6/serial-16<td>36.8 ± 0%
+<tr><td>Adapter/1000/google-cbrotli/7/serial-16<td>36.7 ± 0%
+<tr><td>Adapter/1000/google-cbrotli/8/serial-16<td>36.7 ± 0%
+<tr><td>Adapter/1000/google-cbrotli/9/serial-16<td>36.7 ± 0%
+<tr><td>Adapter/1000/google-cbrotli/10/serial-16<td>37.4 ± 0%
+<tr><td>Adapter/1000/google-cbrotli/11/serial-16<td>37.2 ± 0%
+<tr><td>Adapter/1000/klauspost-zstd/1/serial-16<td>43.1 ± 0%
+<tr><td>Adapter/1000/klauspost-zstd/2/serial-16<td>42.2 ± 0%
+<tr><td>Adapter/1000/klauspost-zstd/3/serial-16<td>41.7 ± 0%
+<tr><td>Adapter/1000/klauspost-zstd/4/serial-16<td>41.3 ± 0%
+<tr><td>Adapter/1000/valyala-gozstd/1/serial-16<td>43.1 ± 0%
+<tr><td>Adapter/1000/valyala-gozstd/2/serial-16<td>42.6 ± 0%
+<tr><td>Adapter/1000/valyala-gozstd/3/serial-16<td>42.0 ± 0%
+<tr><td>Adapter/1000/valyala-gozstd/4/serial-16<td>42.0 ± 0%
+<tr><td>Adapter/1000/valyala-gozstd/5/serial-16<td>41.8 ± 0%
+<tr><td>Adapter/1000/valyala-gozstd/6/serial-16<td>40.9 ± 0%
+<tr><td>Adapter/1000/valyala-gozstd/7/serial-16<td>40.9 ± 0%
+<tr><td>Adapter/1000/valyala-gozstd/8/serial-16<td>40.9 ± 0%
+<tr><td>Adapter/1000/valyala-gozstd/9/serial-16<td>40.6 ± 0%
+<tr><td>Adapter/1000/valyala-gozstd/10/serial-16<td>40.6 ± 0%
+<tr><td>Adapter/1000/valyala-gozstd/11/serial-16<td>40.6 ± 0%
+<tr><td>Adapter/1000/valyala-gozstd/12/serial-16<td>40.5 ± 0%
+<tr><td>Adapter/1000/valyala-gozstd/13/serial-16<td>40.5 ± 0%
+<tr><td>Adapter/1000/valyala-gozstd/14/serial-16<td>40.5 ± 0%
+<tr><td>Adapter/1000/valyala-gozstd/15/serial-16<td>40.5 ± 0%
+<tr><td>Adapter/1000/valyala-gozstd/16/serial-16<td>40.4 ± 0%
+<tr><td>Adapter/1000/valyala-gozstd/17/serial-16<td>40.1 ± 0%
+<tr><td>Adapter/1000/valyala-gozstd/18/serial-16<td>40.0 ± 0%
+<tr><td>Adapter/1000/valyala-gozstd/19/serial-16<td>40.0 ± 0%
+<tr><td>Adapter/1000/valyala-gozstd/20/serial-16<td>40.0 ± 0%
+<tr><td>Adapter/1000/valyala-gozstd/21/serial-16<td>40.0 ± 0%
+<tr><td>Adapter/1000/valyala-gozstd/22/serial-16<td>40.0 ± 0%
+<tr><td>Adapter/10000/klauspost-zstd/1/serial-16<td>28.6 ± 0%
+<tr><td>Adapter/10000/klauspost-zstd/2/serial-16<td>28.1 ± 0%
+<tr><td>Adapter/10000/klauspost-zstd/3/serial-16<td>28.0 ± 0%
+<tr><td>Adapter/10000/klauspost-zstd/4/serial-16<td>27.6 ± 0%
+<tr><td>Adapter/10000/valyala-gozstd/1/serial-16<td>29.1 ± 0%
+<tr><td>Adapter/10000/valyala-gozstd/2/serial-16<td>28.5 ± 0%
+<tr><td>Adapter/10000/valyala-gozstd/3/serial-16<td>28.1 ± 0%
+<tr><td>Adapter/10000/valyala-gozstd/4/serial-16<td>28.1 ± 0%
+<tr><td>Adapter/10000/valyala-gozstd/5/serial-16<td>27.9 ± 0%
+<tr><td>Adapter/10000/valyala-gozstd/6/serial-16<td>27.5 ± 0%
+<tr><td>Adapter/10000/valyala-gozstd/7/serial-16<td>27.3 ± 0%
+<tr><td>Adapter/10000/valyala-gozstd/8/serial-16<td>27.1 ± 0%
+<tr><td>Adapter/10000/valyala-gozstd/9/serial-16<td>26.9 ± 0%
+<tr><td>Adapter/10000/valyala-gozstd/10/serial-16<td>26.9 ± 0%
+<tr><td>Adapter/10000/valyala-gozstd/11/serial-16<td>26.9 ± 0%
+<tr><td>Adapter/10000/valyala-gozstd/12/serial-16<td>26.9 ± 0%
+<tr><td>Adapter/10000/valyala-gozstd/13/serial-16<td>26.8 ± 0%
+<tr><td>Adapter/10000/valyala-gozstd/14/serial-16<td>26.8 ± 0%
+<tr><td>Adapter/10000/valyala-gozstd/15/serial-16<td>26.8 ± 0%
+<tr><td>Adapter/10000/valyala-gozstd/16/serial-16<td>26.8 ± 0%
+<tr><td>Adapter/10000/valyala-gozstd/17/serial-16<td>26.6 ± 0%
+<tr><td>Adapter/10000/valyala-gozstd/18/serial-16<td>26.4 ± 0%
+<tr><td>Adapter/10000/valyala-gozstd/19/serial-16<td>26.4 ± 0%
+<tr><td>Adapter/10000/valyala-gozstd/20/serial-16<td>26.4 ± 0%
+<tr><td>Adapter/10000/valyala-gozstd/21/serial-16<td>26.4 ± 0%
+<tr><td>Adapter/10000/valyala-gozstd/22/serial-16<td>26.4 ± 0%
+<tr><td>Adapter/10000/stdlib-gzip/1/serial-16<td>29.6 ± 0%
+<tr><td>Adapter/10000/stdlib-gzip/2/serial-16<td>28.5 ± 0%
+<tr><td>Adapter/10000/stdlib-gzip/3/serial-16<td>28.1 ± 0%
+<tr><td>Adapter/10000/stdlib-gzip/4/serial-16<td>28.2 ± 0%
+<tr><td>Adapter/10000/stdlib-gzip/5/serial-16<td>27.7 ± 0%
+<tr><td>Adapter/10000/stdlib-gzip/6/serial-16<td>27.6 ± 0%
+<tr><td>Adapter/10000/stdlib-gzip/7/serial-16<td>27.2 ± 0%
+<tr><td>Adapter/10000/stdlib-gzip/8/serial-16<td>27.2 ± 0%
+<tr><td>Adapter/10000/stdlib-gzip/9/serial-16<td>27.2 ± 0%
+<tr><td>Adapter/10000/andybalholm-brotli/1/serial-16<td>29.9 ± 0%
+<tr><td>Adapter/10000/andybalholm-brotli/2/serial-16<td>28.1 ± 0%
+<tr><td>Adapter/10000/andybalholm-brotli/3/serial-16<td>27.9 ± 0%
+<tr><td>Adapter/10000/andybalholm-brotli/4/serial-16<td>27.5 ± 0%
+<tr><td>Adapter/10000/andybalholm-brotli/5/serial-16<td>26.0 ± 0%
+<tr><td>Adapter/10000/andybalholm-brotli/6/serial-16<td>25.9 ± 0%
+<tr><td>Adapter/10000/andybalholm-brotli/7/serial-16<td>25.8 ± 0%
+<tr><td>Adapter/10000/andybalholm-brotli/8/serial-16<td>25.8 ± 0%
+<tr><td>Adapter/10000/andybalholm-brotli/9/serial-16<td>25.8 ± 0%
+<tr><td>Adapter/10000/andybalholm-brotli/10/serial-16<td>23.4 ± 0%
+<tr><td>Adapter/10000/andybalholm-brotli/11/serial-16<td>23.1 ± 0%
+<tr><td>Adapter/10000/google-cbrotli/1/serial-16<td>29.9 ± 0%
+<tr><td>Adapter/10000/google-cbrotli/2/serial-16<td>28.1 ± 0%
+<tr><td>Adapter/10000/google-cbrotli/3/serial-16<td>27.9 ± 0%
+<tr><td>Adapter/10000/google-cbrotli/4/serial-16<td>27.5 ± 0%
+<tr><td>Adapter/10000/google-cbrotli/5/serial-16<td>26.0 ± 0%
+<tr><td>Adapter/10000/google-cbrotli/6/serial-16<td>25.9 ± 0%
+<tr><td>Adapter/10000/google-cbrotli/7/serial-16<td>25.8 ± 0%
+<tr><td>Adapter/10000/google-cbrotli/8/serial-16<td>25.8 ± 0%
+<tr><td>Adapter/10000/google-cbrotli/9/serial-16<td>25.8 ± 0%
+<tr><td>Adapter/10000/google-cbrotli/10/serial-16<td>23.4 ± 0%
+<tr><td>Adapter/10000/google-cbrotli/11/serial-16<td>23.1 ± 0%
+<tr><td>Adapter/100000/stdlib-gzip/1/serial-16<td>27.3 ± 0%
+<tr><td>Adapter/100000/stdlib-gzip/2/serial-16<td>26.2 ± 0%
+<tr><td>Adapter/100000/stdlib-gzip/3/serial-16<td>25.6 ± 0%
+<tr><td>Adapter/100000/stdlib-gzip/4/serial-16<td>25.8 ± 0%
+<tr><td>Adapter/100000/stdlib-gzip/5/serial-16<td>24.9 ± 0%
+<tr><td>Adapter/100000/stdlib-gzip/6/serial-16<td>24.8 ± 0%
+<tr><td>Adapter/100000/stdlib-gzip/7/serial-16<td>24.2 ± 0%
+<tr><td>Adapter/100000/stdlib-gzip/8/serial-16<td>24.1 ± 0%
+<tr><td>Adapter/100000/stdlib-gzip/9/serial-16<td>24.1 ± 0%
+<tr><td>Adapter/100000/andybalholm-brotli/1/serial-16<td>27.6 ± 0%
+<tr><td>Adapter/100000/andybalholm-brotli/2/serial-16<td>25.4 ± 0%
+<tr><td>Adapter/100000/andybalholm-brotli/3/serial-16<td>25.3 ± 0%
+<tr><td>Adapter/100000/andybalholm-brotli/4/serial-16<td>24.9 ± 0%
+<tr><td>Adapter/100000/andybalholm-brotli/5/serial-16<td>23.6 ± 0%
+<tr><td>Adapter/100000/andybalholm-brotli/6/serial-16<td>23.4 ± 0%
+<tr><td>Adapter/100000/andybalholm-brotli/7/serial-16<td>23.3 ± 0%
+<tr><td>Adapter/100000/andybalholm-brotli/8/serial-16<td>23.2 ± 0%
+<tr><td>Adapter/100000/andybalholm-brotli/9/serial-16<td>23.2 ± 0%
+<tr><td>Adapter/100000/andybalholm-brotli/10/serial-16<td>20.2 ± 0%
+<tr><td>Adapter/100000/andybalholm-brotli/11/serial-16<td>19.9 ± 0%
+<tr><td>Adapter/100000/google-cbrotli/1/serial-16<td>27.6 ± 0%
+<tr><td>Adapter/100000/google-cbrotli/2/serial-16<td>25.4 ± 0%
+<tr><td>Adapter/100000/google-cbrotli/3/serial-16<td>25.3 ± 0%
+<tr><td>Adapter/100000/google-cbrotli/4/serial-16<td>24.9 ± 0%
+<tr><td>Adapter/100000/google-cbrotli/5/serial-16<td>23.6 ± 0%
+<tr><td>Adapter/100000/google-cbrotli/6/serial-16<td>23.4 ± 0%
+<tr><td>Adapter/100000/google-cbrotli/7/serial-16<td>23.3 ± 0%
+<tr><td>Adapter/100000/google-cbrotli/8/serial-16<td>23.2 ± 0%
+<tr><td>Adapter/100000/google-cbrotli/9/serial-16<td>23.2 ± 0%
+<tr><td>Adapter/100000/google-cbrotli/10/serial-16<td>20.2 ± 0%
+<tr><td>Adapter/100000/google-cbrotli/11/serial-16<td>19.9 ± 0%
+<tr><td>Adapter/100000/klauspost-zstd/1/serial-16<td>25.9 ± 0%
+<tr><td>Adapter/100000/klauspost-zstd/2/serial-16<td>25.8 ± 0%
+<tr><td>Adapter/100000/klauspost-zstd/3/serial-16<td>25.6 ± 0%
+<tr><td>Adapter/100000/klauspost-zstd/4/serial-16<td>25.3 ± 0%
+<tr><td>Adapter/100000/valyala-gozstd/1/serial-16<td>26.4 ± 0%
+<tr><td>Adapter/100000/valyala-gozstd/2/serial-16<td>25.8 ± 0%
+<tr><td>Adapter/100000/valyala-gozstd/3/serial-16<td>25.8 ± 0%
+<tr><td>Adapter/100000/valyala-gozstd/4/serial-16<td>25.8 ± 0%
+<tr><td>Adapter/100000/valyala-gozstd/5/serial-16<td>25.2 ± 0%
+<tr><td>Adapter/100000/valyala-gozstd/6/serial-16<td>25.0 ± 0%
+<tr><td>Adapter/100000/valyala-gozstd/7/serial-16<td>24.5 ± 0%
+<tr><td>Adapter/100000/valyala-gozstd/8/serial-16<td>24.2 ± 0%
+<tr><td>Adapter/100000/valyala-gozstd/9/serial-16<td>24.1 ± 0%
+<tr><td>Adapter/100000/valyala-gozstd/10/serial-16<td>24.1 ± 0%
+<tr><td>Adapter/100000/valyala-gozstd/11/serial-16<td>24.1 ± 0%
+<tr><td>Adapter/100000/valyala-gozstd/12/serial-16<td>24.0 ± 0%
+<tr><td>Adapter/100000/valyala-gozstd/13/serial-16<td>23.6 ± 0%
+<tr><td>Adapter/100000/valyala-gozstd/14/serial-16<td>23.6 ± 0%
+<tr><td>Adapter/100000/valyala-gozstd/15/serial-16<td>23.6 ± 0%
+<tr><td>Adapter/100000/valyala-gozstd/16/serial-16<td>23.2 ± 0%
+<tr><td>Adapter/100000/valyala-gozstd/17/serial-16<td>23.0 ± 0%
+<tr><td>Adapter/100000/valyala-gozstd/18/serial-16<td>22.9 ± 0%
+<tr><td>Adapter/100000/valyala-gozstd/19/serial-16<td>22.7 ± 0%
+<tr><td>Adapter/100000/valyala-gozstd/20/serial-16<td>22.7 ± 0%
+<tr><td>Adapter/100000/valyala-gozstd/21/serial-16<td>22.7 ± 0%
+<tr><td>Adapter/100000/valyala-gozstd/22/serial-16<td>22.7 ± 0%
+<tr><td>&nbsp;
+</tbody>
+
 </table>
+</body>
+</html>
