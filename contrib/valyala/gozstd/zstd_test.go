@@ -34,7 +34,7 @@ func TestZstd(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if bytes.Compare(s, d) != 0 {
+	if !bytes.Equal(s, d) {
 		t.Fatalf("decoded string mismatch\ngot: %q\nexp: %q", string(s), string(d))
 	}
 }
