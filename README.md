@@ -20,7 +20,7 @@ is significantly wider than the original package.**
 
 ## Features
 
-- gzip and brotli compression by default, zstd and alternate (faster) gzip implementations are optional
+- gzip, brotli, and zstd compression by default, alternate (faster) gzip, zstd implementations are optional
 - Apply compression only if response body size is greater than a threshold
 - Apply compression only to a allowlist/denylist of MIME content types
 - Define encoding priority (e.g. give brotli a higher priority than gzip)
@@ -40,8 +40,8 @@ go get github.com/CAFxX/httpcompression
 Call `httpcompression.Handler` to get an adapter that can be used to wrap
 any handler (an object which implements the `http.Handler` interface),
 to transparently provide response body compression.
-Note that, despite the name, `httpcompression` automatically compresses using
-Brotli or Gzip, depending on the capabilities of the client (`Accept-Encoding`)
+Note that `httpcompression` automatically compresses using Zstandard, Brotli, and Gzip
+depending on the capabilities of the client (`Accept-Encoding`)
 and the configuration of this handler (by default, Zstandard, Brotli and gzip are
 all enabled and, conditional on client support, used in that order of preference).
 
