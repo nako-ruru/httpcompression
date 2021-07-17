@@ -37,7 +37,7 @@ go get github.com/CAFxX/httpcompression
 
 ## Usage
 
-Call `httpcompression.Handler` to get an adapter that can be used to wrap
+Call `httpcompression.DefaultAdapter` to get an adapter that can be used to wrap
 any handler (an object which implements the `http.Handler` interface),
 to transparently provide response body compression.
 Note that `httpcompression` automatically compresses using Zstandard, Brotli, and Gzip
