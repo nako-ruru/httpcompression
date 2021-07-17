@@ -14,11 +14,13 @@ import (
 	"testing"
 
 	"github.com/CAFxX/httpcompression/contrib/andybalholm/brotli"
+	"github.com/CAFxX/httpcompression/contrib/google/cbrotli"
 	"github.com/CAFxX/httpcompression/contrib/klauspost/zstd"
 	"github.com/CAFxX/httpcompression/contrib/valyala/gozstd"
 	"github.com/stretchr/testify/assert"
 
 	ibrotli "github.com/andybalholm/brotli"
+	gcbrotli "github.com/google/brotli/go/cbrotli"
 	kpzstd "github.com/klauspost/compress/zstd"
 	vzstd "github.com/valyala/gozstd"
 )
@@ -1044,10 +1046,20 @@ func TestWriteStringEquivalence(t *testing.T) {
 
 // --------------------------------------------------------------------
 
+const (
+	stdlibGzip        = "stdlib-gzip"
+	googleCbrotli     = "google-cbrotli"
+	andybalholmBrotli = "andybalholm-brotli"
+	klauspostGzip     = "klauspost-gzip"
+	klauspostPgzip    = "klauspost-pgzip"
+	klauspostZstd     = "klauspost-zstd"
+	valyalaGozstd     = "valyala-gozstd"
+)
+
 func BenchmarkAdapter(b *testing.B) {
-	for _, size := range []int{10, 100, 1000, 10000, 100000} {
+	for _, size := range []int{100, 1000, 10000, 100000} {
 		b.Run(fmt.Sprintf("%d", size), func(b *testing.B) {
-			for ae, maxq := range map[string]int{"gzip": 9, "br": 11, "zstd": 4, "zstd-native": 22} {
+			for ae, maxq := range map[string]int{stdlibGzip: 9, andybalholmBrotli: 11, googleCbrotli: 11, klauspostZstd: 4, valyalaGozstd: 22} {
 				if size < DefaultMinSize {
 					maxq = 1
 				}
@@ -1100,13 +1112,15 @@ func benchmark(b *testing.B, parallel bool, size int, ae string, d int) {
 
 	var enc CompressorProvider
 	switch ae {
-	case "gzip":
+	case stdlibGzip:
 		enc, err = NewDefaultGzipCompressor(d)
-	case "br":
+	case andybalholmBrotli:
 		enc, err = brotli.New(brotli.Options{Quality: d})
-	case "zstd":
+	case googleCbrotli:
+		enc, err = cbrotli.New(gcbrotli.WriterOptions{Quality: d})
+	case klauspostZstd:
 		enc, err = zstd.New(kpzstd.WithEncoderLevel(kpzstd.EncoderLevel(d)))
-	case "zstd-native":
+	case valyalaGozstd:
 		enc, err = gozstd.New(vzstd.WriterParams{CompressionLevel: d})
 	}
 	if err != nil {

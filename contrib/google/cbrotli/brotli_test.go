@@ -1,25 +1,23 @@
-package pgzip_test
+package cbrotli_test
 
 import (
 	"bytes"
 	"io/ioutil"
-	"runtime"
 	"testing"
 
-	stdgzip "compress/gzip"
-
 	"github.com/CAFxX/httpcompression"
-	"github.com/CAFxX/httpcompression/contrib/klauspost/pgzip"
+	"github.com/CAFxX/httpcompression/contrib/google/cbrotli"
+	gcbrotli "github.com/google/brotli/go/cbrotli"
 )
 
-var _ httpcompression.CompressorProvider = &pgzip.Compressor{}
+var _ httpcompression.CompressorProvider = &cbrotli.Compressor{}
 
-func TestPgzip(t *testing.T) {
+func TestZstd(t *testing.T) {
 	t.Parallel()
 
 	s := []byte("hello world!")
 
-	c, err := pgzip.New(pgzip.Options{BlockSize: 1 << 20, Blocks: runtime.GOMAXPROCS(0)})
+	c, err := cbrotli.New(gcbrotli.WriterOptions{})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -28,7 +26,7 @@ func TestPgzip(t *testing.T) {
 	w.Write(s)
 	w.Close()
 
-	r, err := stdgzip.NewReader(b)
+	r := gcbrotli.NewReader(b)
 	if err != nil {
 		t.Fatal(err)
 	}
