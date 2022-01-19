@@ -5,6 +5,7 @@ import (
 	"io"
 	"runtime"
 
+	"github.com/CAFxX/httpcompression/contrib/internal/utils"
 	"github.com/google/brotli/go/cbrotli"
 )
 
@@ -18,13 +19,8 @@ type compressor struct {
 
 func New(opts cbrotli.WriterOptions) (c *compressor, err error) {
 	tw := cbrotli.NewWriter(io.Discard, opts)
-	n, err := tw.Write([]byte("test"))
-	if n != 4 || err != nil {
-		return nil, fmt.Errorf("cbrotli: writer initialization (write): %d, %w", n, err)
-	}
-	err = tw.Close()
-	if err != nil {
-		return nil, fmt.Errorf("cbrotli: writer initialization (close): %w", err)
+	if err := utils.CheckWriter(tw); err != nil {
+		return nil, fmt.Errorf("cbrotli: writer initialization: %w", err)
 	}
 
 	c = &compressor{opts: opts}

@@ -1,9 +1,11 @@
 package gozstd
 
 import (
+	"fmt"
 	"io"
 	"sync"
 
+	"github.com/CAFxX/httpcompression/contrib/internal/utils"
 	"github.com/valyala/gozstd"
 )
 
@@ -17,6 +19,17 @@ type compressor struct {
 }
 
 func New(opts gozstd.WriterParams) (c *compressor, err error) {
+	defer func() {
+		if r := recover(); r != nil {
+			c, err = nil, fmt.Errorf("panic: %v", r)
+		}
+	}()
+
+	tw := gozstd.NewWriterParams(io.Discard, &opts)
+	if err := utils.CheckWriter(tw); err != nil {
+		return nil, fmt.Errorf("gozstd: writer initialization: %w", err)
+	}
+
 	c = &compressor{opts: opts}
 	return c, nil
 }

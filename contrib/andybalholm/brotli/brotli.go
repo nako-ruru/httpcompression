@@ -5,6 +5,7 @@ import (
 	"io"
 	"sync"
 
+	"github.com/CAFxX/httpcompression/contrib/internal/utils"
 	"github.com/andybalholm/brotli"
 )
 
@@ -26,7 +27,12 @@ func New(opts Options) (c *compressor, err error) {
 			c, err = nil, fmt.Errorf("panic: %v", r)
 		}
 	}()
-	_ = brotli.NewWriterOptions(nil, opts)
+
+	tw := brotli.NewWriterOptions(io.Discard, opts)
+	if err := utils.CheckWriter(tw); err != nil {
+		return nil, fmt.Errorf("brotli: writer initialization: %w", err)
+	}
+
 	c = &compressor{opts: opts}
 	return c, nil
 }

@@ -1,9 +1,11 @@
 package zstd
 
 import (
+	"fmt"
 	"io"
 	"sync"
 
+	"github.com/CAFxX/httpcompression/contrib/internal/utils"
 	"github.com/klauspost/compress/zstd"
 )
 
@@ -18,11 +20,22 @@ type compressor struct {
 }
 
 func New(opts ...zstd.EOption) (c *compressor, err error) {
+	defer func() {
+		if r := recover(); r != nil {
+			c, err = nil, fmt.Errorf("panic: %v", r)
+		}
+	}()
+
 	opts = append([]zstd.EOption(nil), opts...)
-	_, err = zstd.NewWriter(nil, opts...)
+
+	tw, err := zstd.NewWriter(io.Discard, opts...)
 	if err != nil {
 		return nil, err
 	}
+	if err := utils.CheckWriter(tw); err != nil {
+		return nil, fmt.Errorf("zstd: writer initialization: %w", err)
+	}
+
 	c = &compressor{opts: opts}
 	return c, nil
 }

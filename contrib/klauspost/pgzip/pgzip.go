@@ -1,9 +1,11 @@
 package pgzip
 
 import (
+	"fmt"
 	"io"
 	"sync"
 
+	"github.com/CAFxX/httpcompression/contrib/internal/utils"
 	"github.com/klauspost/pgzip"
 )
 
@@ -24,14 +26,24 @@ type Options struct {
 }
 
 func New(opts Options) (c *compressor, err error) {
-	gw, err := pgzip.NewWriterLevel(nil, opts.Level)
+	defer func() {
+		if r := recover(); r != nil {
+			c, err = nil, fmt.Errorf("panic: %v", r)
+		}
+	}()
+
+	tw, err := pgzip.NewWriterLevel(io.Discard, opts.Level)
 	if err != nil {
 		return nil, err
 	}
-	err = gw.SetConcurrency(opts.BlockSize, opts.Blocks)
+	err = tw.SetConcurrency(opts.BlockSize, opts.Blocks)
 	if err != nil {
 		return nil, err
 	}
+	if err := utils.CheckWriter(tw); err != nil {
+		return nil, fmt.Errorf("pgzip: writer initialization: %w", err)
+	}
+
 	c = &compressor{opts: opts}
 	return c, nil
 }
