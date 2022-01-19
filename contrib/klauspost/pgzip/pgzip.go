@@ -33,7 +33,6 @@ func New(opts Options) (c *compressor, err error) {
 		return nil, err
 	}
 	c = &compressor{opts: opts}
-	c.pool.Put(gw)
 	return c, nil
 }
 

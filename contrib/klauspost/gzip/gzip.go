@@ -22,12 +22,11 @@ type Options struct {
 }
 
 func New(opts Options) (c *compressor, err error) {
-	gw, err := gzip.NewWriterLevel(nil, opts.Level)
+	_, err = gzip.NewWriterLevel(nil, opts.Level)
 	if err != nil {
 		return nil, err
 	}
 	c = &compressor{opts: opts}
-	c.pool.Put(gw)
 	return c, nil
 }
 

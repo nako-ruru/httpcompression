@@ -19,12 +19,11 @@ type compressor struct {
 
 func New(opts ...zstd.EOption) (c *compressor, err error) {
 	opts = append([]zstd.EOption(nil), opts...)
-	gw, err := zstd.NewWriter(nil, opts...)
+	_, err = zstd.NewWriter(nil, opts...)
 	if err != nil {
 		return nil, err
 	}
 	c = &compressor{opts: opts}
-	c.pool.Put(gw)
 	return c, nil
 }
 

@@ -26,9 +26,8 @@ func New(opts Options) (c *compressor, err error) {
 			c, err = nil, fmt.Errorf("panic: %v", r)
 		}
 	}()
-	gw := brotli.NewWriterOptions(nil, opts)
+	_ = brotli.NewWriterOptions(nil, opts)
 	c = &compressor{opts: opts}
-	c.pool.Put(gw)
 	return c, nil
 }
 
