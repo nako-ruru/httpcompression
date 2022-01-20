@@ -48,10 +48,6 @@ type writer struct {
 	*cbrotli.Writer
 }
 
-func (w *writer) Write(buf []byte) (int, error) {
-	return w.Writer.Write(buf)
-}
-
 func (w *writer) Close() error {
 	defer runtime.SetFinalizer(w, nil)
 	return w.Writer.Close()
