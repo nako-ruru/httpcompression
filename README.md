@@ -26,7 +26,7 @@ is significantly wider than the original package.**
 - Define encoding priority (e.g. give brotli a higher priority than gzip)
 - Control whether the client or the server defines the encoder priority
 - Plug in third-party/custom compression schemes or implementations
-- Custom dictionary compression for zstd
+- Custom dictionary compression for zstd and deflate
 - Low memory alliocations via transparent encoder reuse
 
 ## Install
