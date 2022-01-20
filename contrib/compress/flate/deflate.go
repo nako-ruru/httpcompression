@@ -8,6 +8,11 @@ import (
 	"github.com/CAFxX/httpcompression/contrib/internal/utils"
 )
 
+const (
+	Encoding           = "deflate"
+	DefaultCompression = flate.DefaultCompression
+)
+
 type Options struct {
 	Level      int
 	Dictionary []byte

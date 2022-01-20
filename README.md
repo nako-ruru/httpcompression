@@ -7,8 +7,8 @@
 [![Go Reference](https://pkg.go.dev/badge/github.com/CAFxX/httpcompression.svg)](https://pkg.go.dev/github.com/CAFxX/httpcompression)
 
 This is a small Go package which wraps HTTP handlers to transparently compress
-response bodies using zstd, brotli or gzip - for clients which support them. Although
-it's usually simpler to leave that to a reverse proxy (like nginx or Varnish),
+response bodies using zstd, brotli, gzip or deflate - for clients which support them.
+Although it's usually simpler to leave that to a reverse proxy (like nginx or Varnish),
 this package is useful when that is undesirable. In addition, this package allows
 users to extend it by plugging in third-party or custom compression encoders.
 
@@ -20,7 +20,7 @@ is significantly wider than the original package.**
 
 ## Features
 
-- gzip, brotli, and zstd compression by default, alternate (faster) gzip, zstd implementations are optional
+- gzip, deflate, brotli, and zstd compression by default, alternate (faster) gzip, zstd implementations are optional
 - Apply compression only if response body size is greater than a threshold
 - Apply compression only to a allowlist/denylist of MIME content types
 - Define encoding priority (e.g. give brotli a higher priority than gzip)
@@ -40,8 +40,8 @@ go get github.com/CAFxX/httpcompression
 Call `httpcompression.DefaultAdapter` to get an adapter that can be used to wrap
 any handler (an object which implements the `http.Handler` interface),
 to transparently provide response body compression.
-Note that `httpcompression` automatically compresses using Zstandard, Brotli, and Gzip
-depending on the capabilities of the client (`Accept-Encoding`)
+Note that `httpcompression` automatically compresses using Zstandard, Brotli, Deflate,
+and Gzip depending on the capabilities of the client (`Accept-Encoding`)
 and the configuration of this handler (by default, Zstandard, Brotli and gzip are
 all enabled and, conditional on client support, used in that order of preference).
 

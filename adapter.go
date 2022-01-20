@@ -7,6 +7,7 @@ import (
 	"sync"
 
 	"github.com/CAFxX/httpcompression/contrib/andybalholm/brotli"
+	"github.com/CAFxX/httpcompression/contrib/compress/flate"
 	"github.com/CAFxX/httpcompression/contrib/klauspost/zstd"
 )
 
@@ -126,6 +127,7 @@ func addVaryHeader(h http.Header, value string) {
 // use Adapter directly.
 func DefaultAdapter(opts ...Option) (func(http.Handler) http.Handler, error) {
 	defaults := []Option{
+		DeflateCompressionLevel(flate.DefaultCompression),
 		GzipCompressionLevel(gzip.DefaultCompression),
 		BrotliCompressionLevel(brotli.DefaultCompression),
 		defaultZstandardCompressor(),
@@ -166,6 +168,17 @@ func MinSize(size int) Option {
 	}
 }
 
+// DeflateCompressionLevel is an option that controls the Deflate compression
+// level to be used when compressing payloads.
+// The default is flate.DefaultCompression.
+func DeflateCompressionLevel(level int) Option {
+	c, err := flate.New(flate.Options{Level: level})
+	if err != nil {
+		return errorOption(err)
+	}
+	return DeflateCompressor(c)
+}
+
 // GzipCompressionLevel is an option that controls the Gzip compression
 // level to be used when compressing payloads.
 // The default is gzip.DefaultCompression.
@@ -187,6 +200,11 @@ func BrotliCompressionLevel(level int) Option {
 		return errorOption(err)
 	}
 	return BrotliCompressor(c)
+}
+
+// DeflateCompressor is an option to specify a custom compressor factory for Deflate.
+func DeflateCompressor(g CompressorProvider) Option {
+	return Compressor(flate.Encoding, -300, g)
 }
 
 // GzipCompressor is an option to specify a custom compressor factory for Gzip.
