@@ -15,6 +15,7 @@ import (
 
 	"github.com/CAFxX/httpcompression/contrib/andybalholm/brotli"
 	"github.com/CAFxX/httpcompression/contrib/google/cbrotli"
+	kpgzip "github.com/CAFxX/httpcompression/contrib/klauspost/gzip"
 	"github.com/CAFxX/httpcompression/contrib/klauspost/zstd"
 	"github.com/CAFxX/httpcompression/contrib/valyala/gozstd"
 	"github.com/stretchr/testify/assert"
@@ -1059,7 +1060,7 @@ const (
 func BenchmarkAdapter(b *testing.B) {
 	for _, size := range []int{100, 1000, 10000, 100000} {
 		b.Run(fmt.Sprintf("%d", size), func(b *testing.B) {
-			for ae, maxq := range map[string]int{stdlibGzip: 9, andybalholmBrotli: 11, googleCbrotli: 11, klauspostZstd: 4, valyalaGozstd: 22} {
+			for ae, maxq := range map[string]int{stdlibGzip: 9, klauspostGzip: 9, andybalholmBrotli: 11, googleCbrotli: 11, klauspostZstd: 4, valyalaGozstd: 22} {
 				if size < DefaultMinSize {
 					maxq = 1
 				}
@@ -1114,6 +1115,8 @@ func benchmark(b *testing.B, parallel bool, size int, ae string, d int) {
 	switch ae {
 	case stdlibGzip:
 		enc, err = NewDefaultGzipCompressor(d)
+	case klauspostGzip:
+		enc, err = kpgzip.New(kpgzip.Options{Level: d})
 	case andybalholmBrotli:
 		enc, err = brotli.New(brotli.Options{Quality: d})
 	case googleCbrotli:
