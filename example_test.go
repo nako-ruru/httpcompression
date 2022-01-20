@@ -96,6 +96,16 @@ func readZstdDictionary(file string) (dict []byte, coding string, err error) {
 		return nil, "", fmt.Errorf("invalid dictionary")
 	}
 	dictID := binary.LittleEndian.Uint32(dict[4:8]) // read the dictionary ID
-	coding = fmt.Sprintf("z_%08x", dictID)          // build the encoding name: z_XXXXXXXX (where XXXXXXXX is the dictionary ID in hex lowercase)
+	// Build the encoding name: z_XXXXXXXX (where XXXXXXXX is the dictionary ID in hex lowercase).
+	// There is no standard way to communicate the use of a dictionary with a content-encoding:
+	// so we simply use a non-standard name to identify the encoding-dictionary pair in use.
+	// This naming scheme is arbitrary and as long as it is not one of those in the IANA registry
+	// (https://www.iana.org/assignments/http-parameters/http-parameters.xhtml#content-coding)
+	// anything should work. It is recommended not to include one of the standard names even as a
+	// substring of the chosen name as some poorly-configured proxies may simply perform a case
+	// insensitive substring match for e.g. "deflate", in which case the name e.g.
+	// "deflate_12345678" would still match, even though it should not as a deflate decompressor
+	// without the dictionary will fail to decompress the contents.
+	coding = fmt.Sprintf("z_%08x", dictID)
 	return
 }
