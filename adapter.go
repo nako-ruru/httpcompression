@@ -8,6 +8,7 @@ import (
 
 	"github.com/CAFxX/httpcompression/contrib/andybalholm/brotli"
 	"github.com/CAFxX/httpcompression/contrib/compress/flate"
+	cgzip "github.com/CAFxX/httpcompression/contrib/compress/gzip"
 	"github.com/CAFxX/httpcompression/contrib/klauspost/zstd"
 )
 
@@ -220,6 +221,10 @@ func BrotliCompressor(b CompressorProvider) Option {
 // ZstandardCompressor is an option to specify a custom compressor factory for Zstandard.
 func ZstandardCompressor(b CompressorProvider) Option {
 	return Compressor(zstd.Encoding, -50, b)
+}
+
+func NewDefaultGzipCompressor(level int) (CompressorProvider, error) {
+	return cgzip.New(cgzip.Options{Level: level})
 }
 
 func defaultZstandardCompressor() Option {

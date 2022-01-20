@@ -1,7 +1,7 @@
-package flate
+package gzip
 
 import (
-	"compress/flate"
+	"compress/gzip"
 	"fmt"
 	"io"
 	"sync"
@@ -10,13 +10,12 @@ import (
 )
 
 const (
-	Encoding           = "deflate"
-	DefaultCompression = flate.DefaultCompression
+	Encoding           = "gzip"
+	DefaultCompression = gzip.DefaultCompression
 )
 
 type Options struct {
-	Level      int
-	Dictionary []byte
+	Level int
 }
 
 type compressor struct {
@@ -25,13 +24,13 @@ type compressor struct {
 }
 
 func New(opt Options) (*compressor, error) {
-	tw, err := flate.NewWriterDict(io.Discard, opt.Level, opt.Dictionary)
+	tw, err := gzip.NewWriterLevel(io.Discard, opt.Level)
 	if err != nil {
 		return nil, err
 	}
 	err = utils.CheckWriter(tw)
 	if err != nil {
-		return nil, fmt.Errorf("deflate: writer initialization: %w", err)
+		return nil, fmt.Errorf("gzip: writer initialization: %w", err)
 	}
 
 	c := &compressor{opt: opt}
@@ -39,23 +38,23 @@ func New(opt Options) (*compressor, error) {
 }
 
 func (c *compressor) Get(w io.Writer) io.WriteCloser {
-	if gw, ok := c.pool.Get().(*deflateWriter); ok {
+	if gw, ok := c.pool.Get().(*gzipWriter); ok {
 		gw.Reset(w)
 		return gw
 	}
-	gw, _ := flate.NewWriterDict(w, c.opt.Level, c.opt.Dictionary)
-	return &deflateWriter{
+	gw, _ := gzip.NewWriterLevel(w, c.opt.Level)
+	return &gzipWriter{
 		Writer: gw,
 		c:      c,
 	}
 }
 
-type deflateWriter struct {
-	*flate.Writer
+type gzipWriter struct {
+	*gzip.Writer
 	c *compressor
 }
 
-func (w *deflateWriter) Close() error {
+func (w *gzipWriter) Close() error {
 	err := w.Writer.Close()
 	w.Reset(nil)
 	w.c.pool.Put(w)
