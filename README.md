@@ -91,14 +91,16 @@ http.Handle("/", compress(handler))
 
 The `contrib/` directory contains a number of bundled implementations that are ready for use:
 
-| `Content-Encoding` | Provider package                                                                                             | Implementation package                                                      | Notes                                                  |
-|--------------------|--------------------------------------------------------------------------------------------------------------|-----------------------------------------------------------------------------|--------------------------------------------------------|
-| `gzip`             | [contrib/klauspost/gzip](https://pkg.go.dev/github.com/CAFxX/httpcompression/contrib/klauspost/gzip)         | [github.com/klauspost/compress/gzip](https://github.com/klauspost/compress) | Go implementation, faster than compress/gzip           |
-| `gzip`             | [contrib/klauspost/pgzip](https://pkg.go.dev/github.com/CAFxX/httpcompression/contrib/klauspost/pgzip)       | [github.com/klauspost/pgzip](https://github.com/klauspost/pgzip)            | Go implementation, parallel compression                |
-| `zstd`             | [contrib/klauspost/zstd](https://pkg.go.dev/github.com/CAFxX/httpcompression/contrib/klauspost/zstd)         | [github.com/klauspost/compress/zstd](https://github.com/klauspost/compress) | Go implementation                                      |
-| `zstd`             | [contrib/valyala/gozstd](https://pkg.go.dev/github.com/CAFxX/httpcompression/contrib/valyala/gozstd)         | [github.com/valyala/gozstd](https://github.com/valyala/gozstd)              | cgo wrapper                                            |
-| `brotli`           | [contrib/andybalholm/brotli](https://pkg.go.dev/github.com/CAFxX/httpcompression/contrib/andybalholm/brotli) | [github.com/andybalholm/brotli](https://github.com/andybalholm/brotli)      | Go implementation                                      |
-| `brotli`           | [contrib/google/cbrotli](https://pkg.go.dev/github.com/CAFxX/httpcompression/contrib/google/cbrotli)         | [github.com/google/brotli](https://github.com/google/brotli)                | cgo wrapper, requires brotli libraries to be installed |
+| `Content-Encoding` | Provider package                                                                                             | Implementation package                                                      | Notes                                     | Dictionary | Go/cgo | Default |
+| ------------------ | ------------------------------------------------------------------------------------------------------------ | --------------------------------------------------------------------------- | ----------------------------------------- | ---------- | ------ | ------- |
+| `deflate`          | [contrib/compress/flate](https://pkg.go.dev/github.com/CAFxX/httpcompression/contrib/compress/flate)         | compress/flate                                                              |                                           | Yes        | Go     | No      |
+| `gzip`             | (built-in)                                                                                                   | compress/gzip                                                               |                                           | No         | Go     | Yes     |
+| `gzip`             | [contrib/klauspost/gzip](https://pkg.go.dev/github.com/CAFxX/httpcompression/contrib/klauspost/gzip)         | [github.com/klauspost/compress/gzip](https://github.com/klauspost/compress) | Faster than compress/gzip                 | No         | Go     | No      |
+| `gzip`             | [contrib/klauspost/pgzip](https://pkg.go.dev/github.com/CAFxX/httpcompression/contrib/klauspost/pgzip)       | [github.com/klauspost/pgzip](https://github.com/klauspost/pgzip)            | Parallel compression                      | No         | Go     | No      |
+| `zstd`             | [contrib/klauspost/zstd](https://pkg.go.dev/github.com/CAFxX/httpcompression/contrib/klauspost/zstd)         | [github.com/klauspost/compress/zstd](https://github.com/klauspost/compress) |                                           | Yes        | Go     | Yes     |
+| `zstd`             | [contrib/valyala/gozstd](https://pkg.go.dev/github.com/CAFxX/httpcompression/contrib/valyala/gozstd)         | [github.com/valyala/gozstd](https://github.com/valyala/gozstd)              |                                           | Yes        | cgo    | No      |
+| `brotli`           | [contrib/andybalholm/brotli](https://pkg.go.dev/github.com/CAFxX/httpcompression/contrib/andybalholm/brotli) | [github.com/andybalholm/brotli](https://github.com/andybalholm/brotli)      |                                           | No         | Go     | Yes     |
+| `brotli`           | [contrib/google/cbrotli](https://pkg.go.dev/github.com/CAFxX/httpcompression/contrib/google/cbrotli)         | [github.com/google/brotli](https://github.com/google/brotli)                | Requires brotli libraries to be installed | No         | cgo    | No      |
 
 ## Benchmark
 
@@ -107,7 +109,7 @@ compression efficiency of gzip, brotli and zstd in the current implementation.
 
 ## TODO
 
-- Add dictionary support to gzip and brotli (zstd already supports it)
+- Add dictionary support to brotli (zstd already supports it, gzip does not allow dictionaries)
 - Allow to choose dictionary based on content-type
 - Provide additional implementations based on the bindings to the original native implementations
 - Add compressed payload caching (if the same payload has already been compressed and is present in the cache, skip compression)
