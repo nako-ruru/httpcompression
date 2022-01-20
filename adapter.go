@@ -217,12 +217,17 @@ func BrotliCompressor(b CompressorProvider) Option {
 	return Compressor(brotli.Encoding, -100, b)
 }
 
+// ZstandardCompressor is an option to specify a custom compressor factory for Zstandard.
+func ZstandardCompressor(b CompressorProvider) Option {
+	return Compressor(zstd.Encoding, -50, b)
+}
+
 func defaultZstandardCompressor() Option {
 	zstdComp, err := zstd.New()
 	if err != nil {
 		return errorOption(fmt.Errorf("initializing zstd compressor: %w", err))
 	}
-	return Compressor(zstd.Encoding, -50, zstdComp)
+	return ZstandardCompressor(zstdComp)
 }
 
 func errorOption(err error) Option {
