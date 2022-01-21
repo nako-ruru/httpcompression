@@ -1,17 +1,17 @@
 //go:build race
 // +build race
 
-package gzip_test
+package flate_test
 
 import (
 	"testing"
 
 	"github.com/CAFxX/httpcompression/contrib/internal"
-	"github.com/CAFxX/httpcompression/contrib/klauspost/gzip"
+	"github.com/CAFxX/httpcompression/contrib/klauspost/flate"
 )
 
-func TestGzipRace(t *testing.T) {
+func TestDeflateRace(t *testing.T) {
 	t.Parallel()
-	c, _ := gzip.New(gzip.Options{})
+	c, _ := flate.New(flate.Options{})
 	internal.RaceTestCompressionProvider(c, 100)
 }
