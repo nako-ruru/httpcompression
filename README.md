@@ -110,13 +110,14 @@ compression efficiency of gzip, brotli and zstd in the current implementation.
 
 ## TODO
 
-- Add dictionary support to brotli (zstd already supports it, gzip does not allow dictionaries)
+- Add dictionary support to brotli (zstd and deflate already support it, gzip does not allow dictionaries)
 - Allow to choose dictionary based on content-type
 - Provide additional implementations based on the bindings to the original native implementations
 - Add compressed payload caching (if the same payload has already been compressed and is present in the cache, skip compression)
 - Add write buffering (compress larger chunks at once)
 - Add decompression (if the payload is already compressed but the client supports better algorithms, or does not support a certain algorithm)
 - Add other, non-standardized content encodings (lz4, lzma/lzma2/xz, snappy, bzip2, etc.)
+- Dynamically tune MinSize (and possibly also ContentTypes, level/quality, ...) 
 
 ## License
 
