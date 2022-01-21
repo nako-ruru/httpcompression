@@ -47,7 +47,7 @@ func (c *compressor) Get(w io.Writer) io.WriteCloser {
 	}
 	gw, err := zstd.NewWriter(w, c.opts...)
 	if err != nil {
-		panic(err)
+		return utils.ErrorWriteCloser{Err: err}
 	}
 	return &zstdWriter{
 		Encoder: gw,

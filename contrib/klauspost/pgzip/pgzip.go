@@ -55,11 +55,11 @@ func (c *compressor) Get(w io.Writer) io.WriteCloser {
 	}
 	gw, err := pgzip.NewWriterLevel(w, c.opts.Level)
 	if err != nil {
-		panic(err)
+		return utils.ErrorWriteCloser{Err: err}
 	}
 	err = gw.SetConcurrency(c.opts.BlockSize, c.opts.Blocks)
 	if err != nil {
-		panic(err)
+		return utils.ErrorWriteCloser{Err: err}
 	}
 	return &writer{
 		Writer: gw,

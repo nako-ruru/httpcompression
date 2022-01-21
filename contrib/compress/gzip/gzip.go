@@ -42,7 +42,10 @@ func (c *compressor) Get(w io.Writer) io.WriteCloser {
 		gw.Reset(w)
 		return gw
 	}
-	gw, _ := gzip.NewWriterLevel(w, c.opt.Level)
+	gw, err := gzip.NewWriterLevel(w, c.opt.Level)
+	if err != nil {
+		return utils.ErrorWriteCloser{Err: err}
+	}
 	return &gzipWriter{
 		Writer: gw,
 		c:      c,

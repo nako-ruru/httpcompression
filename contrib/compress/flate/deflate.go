@@ -43,7 +43,10 @@ func (c *compressor) Get(w io.Writer) io.WriteCloser {
 		gw.Reset(w)
 		return gw
 	}
-	gw, _ := flate.NewWriterDict(w, c.opt.Level, c.opt.Dictionary)
+	gw, err := flate.NewWriterDict(w, c.opt.Level, c.opt.Dictionary)
+	if err != nil {
+		return utils.ErrorWriteCloser{Err: err}
+	}
 	return &deflateWriter{
 		Writer: gw,
 		c:      c,
