@@ -12,6 +12,7 @@ import (
 	"github.com/CAFxX/httpcompression/contrib/andybalholm/brotli"
 	"github.com/CAFxX/httpcompression/contrib/klauspost/gzip"
 	"github.com/CAFxX/httpcompression/contrib/klauspost/zstd"
+	"github.com/CAFxX/httpcompression/contrib/pierrec/lz4"
 	kpzstd "github.com/klauspost/compress/zstd"
 )
 
@@ -108,4 +109,19 @@ func readZstdDictionary(file string) (dict []byte, coding string, err error) {
 	// without the dictionary will fail to decompress the contents.
 	coding = fmt.Sprintf("z_%08x", dictID)
 	return
+}
+
+// ExampleCustomCompressor shows how to create an httpcompression adapter with a custom compressor.
+// In this case we use the pierrec/lz4 compressor in contrib, but it could be replaced with any
+// other compressor, as long as it implements the CompressorProvider interface.
+func ExampleCustomCompressor() {
+	c, err := lz4.New()
+	if err != nil {
+		log.Fatal(err)
+	}
+	_, _ = httpcompression.Adapter(
+		// Only enable the custom compressor; other options/compressors can be added if needed,
+		// or DefaultAdapter could be used as a baseline.
+		httpcompression.Compressor(lz4.Encoding, 0, c),
+	)
 }

@@ -1,4 +1,4 @@
-package flate
+package lz4
 
 import (
 	"fmt"
@@ -6,37 +6,34 @@ import (
 	"sync"
 
 	"github.com/CAFxX/httpcompression/contrib/internal/utils"
-	"github.com/klauspost/compress/flate"
+	lz4 "github.com/pierrec/lz4/v4"
 )
 
 const (
-	Encoding           = "gzip"
-	DefaultCompression = flate.DefaultCompression
+	Encoding = "lz4"
 )
 
 type compressor struct {
 	pool sync.Pool
-	opts Options
+	opts []lz4.Option
 }
 
-type Options struct {
-	Level      int
-	Dictionary []byte
-}
-
-func New(opts Options) (c *compressor, err error) {
+func New(opts ...lz4.Option) (c *compressor, err error) {
 	defer func() {
 		if r := recover(); r != nil {
 			c, err = nil, fmt.Errorf("panic: %v", r)
 		}
 	}()
 
-	tw, err := flate.NewWriterDict(io.Discard, opts.Level, opts.Dictionary)
+	opts = append([]lz4.Option(nil), opts...)
+
+	tw := lz4.NewWriter(io.Discard)
+	err = tw.Apply(opts...)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("lz4: apply options: %w", err)
 	}
 	if err := utils.CheckWriter(tw); err != nil {
-		return nil, fmt.Errorf("deflate: writer initialization: %w", err)
+		return nil, fmt.Errorf("lz4: writer initialization: %w", err)
 	}
 
 	c = &compressor{opts: opts}
@@ -48,7 +45,8 @@ func (c *compressor) Get(w io.Writer) io.WriteCloser {
 		gw.Reset(w)
 		return gw
 	}
-	gw, err := flate.NewWriterDict(w, c.opts.Level, c.opts.Dictionary)
+	gw := lz4.NewWriter(w)
+	err := gw.Apply(c.opts...)
 	if err != nil {
 		return utils.ErrorWriteCloser{Err: err}
 	}
@@ -59,7 +57,7 @@ func (c *compressor) Get(w io.Writer) io.WriteCloser {
 }
 
 type writer struct {
-	*flate.Writer
+	*lz4.Writer
 	c *compressor
 }
 
