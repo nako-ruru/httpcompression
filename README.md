@@ -12,7 +12,7 @@ Although it's usually simpler to leave that to a reverse proxy (like nginx or Va
 this package is useful when that is undesirable. In addition, this package allows
 users to extend it by plugging in third-party or custom compression encoders.
 
-**Note: This package was recently forked from NYTimes/gziphandler.
+**Note: This package was recently forked from the dead NYTimes/gziphandler.
 Maintaining drop-in compatibility is not a goal of this fork, as the scope of this fork
 is significantly wider than the original package.**
 
