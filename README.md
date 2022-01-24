@@ -119,6 +119,7 @@ compression efficiency of gzip, brotli and zstd in the current implementation.
 - Add decompression (if the payload is already compressed but the client supports better algorithms, or does not support a certain algorithm)
 - Add other, non-standardized content encodings (lzma/lzma2/xz, snappy, bzip2, etc.)
 - Dynamically tune MinSize (and possibly also ContentTypes, level/quality, ...) 
+- Automatically generate and serve dictionaries
 
 ## License
 
