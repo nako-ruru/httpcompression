@@ -1,3 +1,3 @@
-package flate
+package zlib
 
 type Compressor = compressor

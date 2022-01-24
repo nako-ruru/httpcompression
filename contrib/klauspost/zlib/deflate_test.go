@@ -1,24 +1,24 @@
-package flate_test
+package zlib_test
 
 import (
 	"bytes"
 	"io/ioutil"
 	"testing"
 
-	stdflate "compress/flate"
+	stdzlib "compress/zlib"
 
 	"github.com/CAFxX/httpcompression"
-	"github.com/CAFxX/httpcompression/contrib/klauspost/flate"
+	"github.com/CAFxX/httpcompression/contrib/klauspost/zlib"
 )
 
-var _ httpcompression.CompressorProvider = &flate.Compressor{}
+var _ httpcompression.CompressorProvider = &zlib.Compressor{}
 
 func TestDeflate(t *testing.T) {
 	t.Parallel()
 
 	s := []byte("hello world!")
 
-	c, err := flate.New(flate.Options{Dictionary: s})
+	c, err := zlib.New(zlib.Options{Dictionary: s})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -27,7 +27,10 @@ func TestDeflate(t *testing.T) {
 	w.Write(s)
 	w.Close()
 
-	r := stdflate.NewReaderDict(b, s)
+	r, err := stdzlib.NewReaderDict(b, s)
+	if err != nil {
+		t.Fatal(err)
+	}
 	d, err := ioutil.ReadAll(r)
 	if err != nil {
 		t.Fatal(err)

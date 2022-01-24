@@ -1,4 +1,4 @@
-package flate
+package zlib
 
 import (
 	"fmt"
@@ -6,12 +6,12 @@ import (
 	"sync"
 
 	"github.com/CAFxX/httpcompression/contrib/internal/utils"
-	"github.com/klauspost/compress/flate"
+	"github.com/klauspost/compress/zlib"
 )
 
 const (
 	Encoding           = "gzip"
-	DefaultCompression = flate.DefaultCompression
+	DefaultCompression = zlib.DefaultCompression
 )
 
 type compressor struct {
@@ -31,7 +31,7 @@ func New(opts Options) (c *compressor, err error) {
 		}
 	}()
 
-	tw, err := flate.NewWriterDict(io.Discard, opts.Level, opts.Dictionary)
+	tw, err := zlib.NewWriterLevelDict(io.Discard, opts.Level, opts.Dictionary)
 	if err != nil {
 		return nil, err
 	}
@@ -48,7 +48,7 @@ func (c *compressor) Get(w io.Writer) io.WriteCloser {
 		gw.Reset(w)
 		return gw
 	}
-	gw, err := flate.NewWriterDict(w, c.opts.Level, c.opts.Dictionary)
+	gw, err := zlib.NewWriterLevelDict(w, c.opts.Level, c.opts.Dictionary)
 	if err != nil {
 		return utils.ErrorWriteCloser{Err: err}
 	}
@@ -59,7 +59,7 @@ func (c *compressor) Get(w io.Writer) io.WriteCloser {
 }
 
 type writer struct {
-	*flate.Writer
+	*zlib.Writer
 	c *compressor
 }
 

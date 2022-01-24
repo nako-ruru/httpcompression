@@ -1,7 +1,7 @@
-package flate
+package zlib
 
 import (
-	"compress/flate"
+	"compress/zlib"
 	"fmt"
 	"io"
 	"sync"
@@ -11,7 +11,7 @@ import (
 
 const (
 	Encoding           = "deflate"
-	DefaultCompression = flate.DefaultCompression
+	DefaultCompression = zlib.DefaultCompression
 )
 
 type Options struct {
@@ -25,7 +25,7 @@ type compressor struct {
 }
 
 func New(opt Options) (*compressor, error) {
-	tw, err := flate.NewWriterDict(io.Discard, opt.Level, opt.Dictionary)
+	tw, err := zlib.NewWriterLevelDict(io.Discard, opt.Level, opt.Dictionary)
 	if err != nil {
 		return nil, err
 	}
@@ -43,7 +43,7 @@ func (c *compressor) Get(w io.Writer) io.WriteCloser {
 		gw.Reset(w)
 		return gw
 	}
-	gw, err := flate.NewWriterDict(w, c.opt.Level, c.opt.Dictionary)
+	gw, err := zlib.NewWriterLevelDict(w, c.opt.Level, c.opt.Dictionary)
 	if err != nil {
 		return utils.ErrorWriteCloser{Err: err}
 	}
@@ -54,7 +54,7 @@ func (c *compressor) Get(w io.Writer) io.WriteCloser {
 }
 
 type deflateWriter struct {
-	*flate.Writer
+	*zlib.Writer
 	c *compressor
 }
 

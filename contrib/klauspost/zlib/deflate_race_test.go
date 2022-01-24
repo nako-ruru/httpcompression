@@ -1,17 +1,17 @@
 //go:build race
 // +build race
 
-package flate_test
+package zlib_test
 
 import (
 	"testing"
 
 	"github.com/CAFxX/httpcompression/contrib/internal"
-	"github.com/CAFxX/httpcompression/contrib/klauspost/flate"
+	"github.com/CAFxX/httpcompression/contrib/klauspost/zlib"
 )
 
 func TestDeflateRace(t *testing.T) {
 	t.Parallel()
-	c, _ := flate.New(flate.Options{})
+	c, _ := zlib.New(zlib.Options{})
 	internal.RaceTestCompressionProvider(c, 100)
 }
