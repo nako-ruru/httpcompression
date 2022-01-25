@@ -146,6 +146,9 @@ func (w *compressWriter) startCompress(enc string) error {
 	// See: https://github.com/golang/go/issues/14975.
 	w.Header().Del(contentLength)
 
+	// See the comment about ranges in adapter.go
+	w.Header().Del(acceptRanges)
+
 	// Write the header to gzip response.
 	if w.code != 0 {
 		w.ResponseWriter.WriteHeader(w.code)
@@ -176,6 +179,10 @@ func (w *compressWriter) startCompress(enc string) error {
 
 // startPlain writes to sent bytes and buffer the underlying ResponseWriter without gzip.
 func (w *compressWriter) startPlain() error {
+	// See the comment about ranges in adapter.go; we need to do it even in this case
+	// because adapter will strip the range header anyway.
+	w.Header().Del(acceptRanges)
+
 	if w.code != 0 {
 		w.ResponseWriter.WriteHeader(w.code)
 		// Ensure that no other WriteHeader's happen

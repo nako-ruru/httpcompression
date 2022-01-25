@@ -1045,6 +1045,65 @@ func TestWriteStringEquivalence(t *testing.T) {
 	}
 }
 
+func TestAcceptRanges(t *testing.T) {
+	// Tests for https://github.com/nytimes/gziphandler/issues/83 https://github.com/CAFxX/httpcompression/issues/6
+	t.Parallel()
+
+	cases := map[string]struct {
+		contentType    string
+		writeHeader    bool
+		_range         string
+		acceptEncoding string
+		body           string
+
+		expectRange           string
+		expectAcceptRanges    string
+		expectContentEncoding string
+	}{
+		// if the response is compressed, we do not support accept-ranges/range
+		"supported-encoding range":                      {"text/plain", false, "100-110bytes", "gzip", testBody, "", "", "gzip"},
+		"supported-encoding range explicit-writeheader": {"text/plain", true, "100-110bytes", "gzip", testBody, "", "", "gzip"},
+		// if the client does not accept one of the enabled encodings, we support accept-ranges/range
+		"unsupported-encoding range":                      {"text/plain", false, "100-110bytes", "unknown", testBody, "100-110bytes", "bytes", ""},
+		"unsupported-encoding range explicit-writeheader": {"text/plain", true, "100-110bytes", "unknown", testBody, "100-110bytes", "bytes", ""},
+		// if the content-type is not allowed to be compressed, we still strip the accept-ranges/range headers
+		// because we can't know this until the handler starts writing the response. See also the comments in adapter.go.
+		"not-whitelisted-type range":                      {"unknown/type", false, "100-110bytes", "gzip", testBody, "", "", ""},
+		"not-whitelisted-type range explicit-writeheader": {"unknown/type", true, "100-110bytes", "gzip", testBody, "", "", ""},
+	}
+
+	for n, c := range cases {
+		c := c
+		t.Run(n, func(t *testing.T) {
+			t.Parallel()
+
+			handler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				assert.Equal(t, c.expectRange, r.Header.Get("Range"))
+				w.Header().Set(contentType, c.contentType)
+				w.Header().Set(acceptRanges, "bytes")
+				if c.writeHeader {
+					w.WriteHeader(http.StatusOK)
+				}
+				w.Write([]byte(c.body))
+			})
+
+			wrapper, err := DefaultAdapter(ContentTypes([]string{"text/plain"}, false))
+			assert.Nil(t, err, "DefaultAdapter returned error")
+
+			req, _ := http.NewRequest("GET", "/", nil)
+			req.Header.Set("Accept-Encoding", c.acceptEncoding)
+			req.Header.Set("Range", c._range)
+			resp := httptest.NewRecorder()
+			wrapper(handler).ServeHTTP(resp, req)
+			res := resp.Result()
+
+			assert.Equal(t, 200, res.StatusCode)
+			assert.Equal(t, c.expectAcceptRanges, res.Header.Get(acceptRanges))
+			assert.Equal(t, c.expectContentEncoding, res.Header.Get(contentEncoding))
+		})
+	}
+}
+
 // --------------------------------------------------------------------
 
 const (

@@ -15,6 +15,7 @@ import (
 const (
 	vary            = "Vary"
 	acceptEncoding  = "Accept-Encoding"
+	acceptRanges    = "Accept-Ranges"
 	contentEncoding = "Content-Encoding"
 	contentType     = "Content-Type"
 	contentLength   = "Content-Length"
@@ -75,6 +76,17 @@ func Adapter(opts ...Option) (func(http.Handler) http.Handler, error) {
 				h.ServeHTTP(w, r)
 				return
 			}
+
+			// We do not handle range requests when compression is used, as the
+			// range specified applies to the compressed data, not to the uncompressed one.
+			// So we would need to (1) ensure that compressors are deterministic and (2)
+			// generate the whole uncompressed response anyway, compress it, and then discard
+			// the bits outside of the range.
+			// Let's keep it simple, and simply ignore completely the range header.
+			// We also need to remove the Accept: Range header from any response that is
+			// compressed; this is done in the ResponseWriter.
+			// See https://github.com/nytimes/gziphandler/issues/83.
+			r.Header.Del("Range")
 
 			gw, _ := writerPool.Get().(*compressWriter)
 			if gw == nil {
