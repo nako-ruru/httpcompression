@@ -66,6 +66,8 @@ func TestParseEncodings(t *testing.T) {
 func TestGzipHandler(t *testing.T) {
 	t.Parallel()
 
+	const gzipEncoding = "gzip"
+
 	// This just exists to provide something for GzipHandler to wrap.
 	handler := newTestHandler(testBody)
 

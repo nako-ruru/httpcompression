@@ -20,7 +20,6 @@ const (
 	contentType     = "Content-Type"
 	contentLength   = "Content-Length"
 	_range          = "Range"
-	gzipEncoding    = "gzip"
 )
 
 type codings map[string]float64
@@ -223,7 +222,7 @@ func DeflateCompressor(g CompressorProvider) Option {
 
 // GzipCompressor is an option to specify a custom compressor factory for Gzip.
 func GzipCompressor(g CompressorProvider) Option {
-	return Compressor(gzipEncoding, -200, g)
+	return Compressor(cgzip.Encoding, -200, g)
 }
 
 // BrotliCompressor is an option to specify a custom compressor factory for Brotli.
