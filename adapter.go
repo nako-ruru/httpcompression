@@ -19,6 +19,7 @@ const (
 	contentEncoding = "Content-Encoding"
 	contentType     = "Content-Type"
 	contentLength   = "Content-Length"
+	_range          = "Range"
 	gzipEncoding    = "gzip"
 )
 
@@ -86,7 +87,7 @@ func Adapter(opts ...Option) (func(http.Handler) http.Handler, error) {
 			// We also need to remove the Accept: Range header from any response that is
 			// compressed; this is done in the ResponseWriter.
 			// See https://github.com/nytimes/gziphandler/issues/83.
-			r.Header.Del("Range")
+			r.Header.Del(_range)
 
 			gw, _ := writerPool.Get().(*compressWriter)
 			if gw == nil {
