@@ -3,6 +3,7 @@ package httpcompression
 import (
 	"bytes"
 	"compress/gzip"
+	"context"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -1214,6 +1215,7 @@ func benchmark(b *testing.B, parallel bool, size int, ae string, d int) {
 	if parallel {
 		b.RunParallel(func(pb *testing.PB) {
 			res := &discardResponseWriter{}
+			req := req.Clone(context.Background())
 			for pb.Next() {
 				res.reset()
 				handler.ServeHTTP(res, req)
