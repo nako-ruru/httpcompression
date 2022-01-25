@@ -1061,15 +1061,15 @@ func TestAcceptRanges(t *testing.T) {
 		expectContentEncoding string
 	}{
 		// if the response is compressed, we do not support accept-ranges/range
-		"supported-encoding range":                      {"text/plain", false, "100-110bytes", "gzip", testBody, "", "", "gzip"},
-		"supported-encoding range explicit-writeheader": {"text/plain", true, "100-110bytes", "gzip", testBody, "", "", "gzip"},
+		"supported-encoding range":                      {"text/plain", false, "bytes=100-110", "gzip", testBody, "", "", "gzip"},
+		"supported-encoding range explicit-writeheader": {"text/plain", true, "bytes=100-110", "gzip", testBody, "", "", "gzip"},
 		// if the client does not accept one of the enabled encodings, we support accept-ranges/range
-		"unsupported-encoding range":                      {"text/plain", false, "100-110bytes", "unknown", testBody, "100-110bytes", "bytes", ""},
-		"unsupported-encoding range explicit-writeheader": {"text/plain", true, "100-110bytes", "unknown", testBody, "100-110bytes", "bytes", ""},
+		"unsupported-encoding range":                      {"text/plain", false, "bytes=100-110", "unknown", testBody, "bytes=100-110", "bytes", ""},
+		"unsupported-encoding range explicit-writeheader": {"text/plain", true, "bytes=100-110", "unknown", testBody, "bytes=100-110", "bytes", ""},
 		// if the content-type is not allowed to be compressed, we still strip the accept-ranges/range headers
 		// because we can't know this until the handler starts writing the response. See also the comments in adapter.go.
-		"not-whitelisted-type range":                      {"unknown/type", false, "100-110bytes", "gzip", testBody, "", "", ""},
-		"not-whitelisted-type range explicit-writeheader": {"unknown/type", true, "100-110bytes", "gzip", testBody, "", "", ""},
+		"not-whitelisted-type range":                      {"unknown/type", false, "bytes=100-110", "gzip", testBody, "", "", ""},
+		"not-whitelisted-type range explicit-writeheader": {"unknown/type", true, "bytes=100-110", "gzip", testBody, "", "", ""},
 	}
 
 	for n, c := range cases {
