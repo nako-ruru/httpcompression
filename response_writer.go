@@ -24,8 +24,8 @@ type compressWriter struct {
 
 	w    io.Writer
 	enc  string
-	code int    // Saves the WriteHeader value.
-	buf  []byte // Holds the first part of the write before reaching the minSize or the end of the write.
+	code int     // Saves the WriteHeader value.
+	buf  *[]byte // Holds the first part of the write before reaching the minSize or the end of the write.
 }
 
 var (
@@ -88,21 +88,21 @@ func (w *compressWriter) Write(b []byte) (int, error) {
 	// Slow path: we don't have yet enough information to decide whether we should
 	// compress this response. Append the data to a temporary buffer and then try again.
 	if w.buf == nil {
-		w.buf, _ = w.pool.Get().([]byte)
+		w.buf = w.getBuffer()
 	}
-	w.buf = append(w.buf, b...)
+	*w.buf = append(*w.buf, b...)
 
 	// Only continue if they didn't already choose an encoding or a known unhandled content length or type.
 	if ce == "" && (cl == 0 || cl >= w.config.minSize) && (ct == "" || handleContentType(ct, w.config.contentTypes, w.config.blacklist)) {
 		// If the current buffer is less than minSize and a Content-Length isn't set, then wait until we have more data.
-		if len(w.buf) < w.config.minSize && cl == 0 {
+		if len(*w.buf) < w.config.minSize && cl == 0 {
 			return len(b), nil
 		}
 		// If the Content-Length is larger than minSize or the current buffer is larger than minSize, then continue.
-		if cl >= w.config.minSize || len(w.buf) >= w.config.minSize {
+		if cl >= w.config.minSize || len(*w.buf) >= w.config.minSize {
 			// If a Content-Type wasn't specified, infer it from the current buffer.
 			if ct == "" {
-				ct = http.DetectContentType(w.buf)
+				ct = http.DetectContentType(*w.buf)
 				if ct != "" {
 					// net/http by default performs content sniffing but this is disabled if content-encoding is set.
 					// Since we set content-encoding, if content-type was not set and we successfully sniffed it,
@@ -112,7 +112,7 @@ func (w *compressWriter) Write(b []byte) (int, error) {
 			}
 			if handleContentType(ct, w.config.contentTypes, w.config.blacklist) {
 				enc := preferredEncoding(w.accept, w.config.compressor, w.common, w.config.prefer)
-				if err := w.startCompress(enc, w.buf); err != nil {
+				if err := w.startCompress(enc, *w.buf); err != nil {
 					return 0, err
 				}
 				return len(b), nil
@@ -120,7 +120,7 @@ func (w *compressWriter) Write(b []byte) (int, error) {
 		}
 	}
 	// If we got here, we should not GZIP this response.
-	if err := w.startPlain(w.buf); err != nil {
+	if err := w.startPlain(*w.buf); err != nil {
 		return 0, err
 	}
 	return len(b), nil
@@ -238,7 +238,11 @@ func (w *compressWriter) Close() error {
 	}
 
 	// compression not triggered yet, write out regular response.
-	err := w.startPlain(w.buf)
+	var buf []byte
+	if w.buf != nil {
+		buf = *w.buf
+	}
+	err := w.startPlain(buf)
 	// Returns the error if any at write.
 	if err != nil {
 		err = fmt.Errorf("httpcompression: write to regular responseWriter at close gets error: %v", err)
@@ -285,9 +289,23 @@ func (w *compressWriter) Hijack() (net.Conn, *bufio.ReadWriter, error) {
 	return nil, nil, fmt.Errorf("http.Hijacker interface is not supported")
 }
 
+func (w *compressWriter) getBuffer() *[]byte {
+	b := w.pool.Get()
+	if b == nil {
+		var s []byte
+		return &s
+	}
+	return b.(*[]byte)
+}
+
 func (w *compressWriter) recycleBuffer() {
-	if cap(w.buf) > 0 && cap(w.buf) <= maxBuf {
-		w.pool.Put(w.buf[:0])
+	if w.buf == nil {
+		return
+	}
+	buf := *w.buf
+	if cap(buf) > 0 && cap(buf) <= maxBuf {
+		*w.buf = buf[:0]
+		w.pool.Put(w.buf)
 	}
 	w.buf = nil
 }
