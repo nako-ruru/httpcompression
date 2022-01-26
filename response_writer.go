@@ -29,10 +29,10 @@ type compressWriter struct {
 }
 
 var (
-	_ io.WriteCloser = &compressWriter{}
-	_ http.Flusher   = &compressWriter{}
-	_ http.Hijacker  = &compressWriter{}
-	_ writeStringer  = &compressWriter{}
+	_ io.WriteCloser  = &compressWriter{}
+	_ http.Flusher    = &compressWriter{}
+	_ http.Hijacker   = &compressWriter{}
+	_ io.StringWriter = &compressWriter{}
 )
 
 type compressWriterWithCloseNotify struct {
@@ -44,10 +44,10 @@ func (w compressWriterWithCloseNotify) CloseNotify() <-chan bool {
 }
 
 var (
-	_ io.WriteCloser = compressWriterWithCloseNotify{}
-	_ http.Flusher   = compressWriterWithCloseNotify{}
-	_ http.Hijacker  = compressWriterWithCloseNotify{}
-	_ writeStringer  = compressWriterWithCloseNotify{}
+	_ io.WriteCloser  = compressWriterWithCloseNotify{}
+	_ http.Flusher    = compressWriterWithCloseNotify{}
+	_ http.Hijacker   = compressWriterWithCloseNotify{}
+	_ io.StringWriter = compressWriterWithCloseNotify{}
 )
 
 const maxBuf = 1 << 16 // maximum size of recycled buffer
@@ -118,7 +118,7 @@ func (w *compressWriter) WriteString(s string) (int, error) {
 	// Since WriteString is an optional interface of the compressor, and the actual compressor
 	// is chosen only after the first call to Write, we can't statically know whether the interface
 	// is supported. We therefore have to check dynamically.
-	if ws, _ := w.w.(writeStringer); ws != nil {
+	if ws, _ := w.w.(io.StringWriter); ws != nil {
 		// The responseWriter is already initialized and it implements WriteString.
 		return ws.WriteString(s)
 	}
@@ -126,10 +126,6 @@ func (w *compressWriter) WriteString(s string) (int, error) {
 	// and it does not implement WriteString. We could in theory do something unsafe
 	// here but for now let's keep it simple and fallback to Write.
 	return w.Write([]byte(s))
-}
-
-type writeStringer interface {
-	WriteString(string) (int, error)
 }
 
 // startCompress initializes a compressing writer and writes the buffer.
