@@ -1107,6 +1107,35 @@ func TestAcceptRanges(t *testing.T) {
 	}
 }
 
+func TestShortFirstWrite(t *testing.T) {
+	t.Parallel()
+
+	handler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		n, err := w.Write([]byte(testBody[:1]))
+		assert.Equal(t, 1, n)
+		assert.Nil(t, err)
+		n, err = w.Write([]byte(testBody[1:]))
+		assert.Equal(t, len(testBody)-1, n)
+		assert.Nil(t, err)
+	})
+
+	wrapper, err := DefaultAdapter()
+	assert.Nil(t, err, "DefaultAdapter returned error")
+
+	req, _ := http.NewRequest("GET", "/", nil)
+	req.Header.Set("Accept-Encoding", "gzip")
+	resp := httptest.NewRecorder()
+	wrapper(handler).ServeHTTP(resp, req)
+	res := resp.Result()
+
+	assert.Equal(t, 200, res.StatusCode)
+	assert.Equal(t, "gzip", res.Header.Get(contentEncoding))
+
+	buf, err := decodeGzip(resp.Body)
+	assert.Nil(t, err)
+	assert.Equal(t, testBody, string(buf))
+}
+
 // --------------------------------------------------------------------
 
 const (
@@ -1285,4 +1314,12 @@ func newTestHandler(body string, opts ...Option) http.Handler {
 			w.Write(buf)
 		}
 	}))
+}
+
+func decodeGzip(i io.Reader) ([]byte, error) {
+	r, err := gzip.NewReader(i)
+	if err != nil {
+		return nil, err
+	}
+	return ioutil.ReadAll(r)
 }
