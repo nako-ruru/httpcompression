@@ -4,6 +4,7 @@ import (
 	"compress/gzip"
 	"fmt"
 	"net/http"
+	"strings"
 	"sync"
 
 	"github.com/CAFxX/httpcompression/contrib/andybalholm/brotli"
@@ -123,9 +124,8 @@ func Adapter(opts ...Option) (func(http.Handler) http.Handler, error) {
 }
 
 func addVaryHeader(h http.Header, value string) {
-	value = http.CanonicalHeaderKey(value)
 	for _, v := range h.Values(vary) {
-		if http.CanonicalHeaderKey(v) == value {
+		if strings.EqualFold(value, v) {
 			return
 		}
 	}
