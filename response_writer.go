@@ -125,6 +125,8 @@ func (w *compressWriter) WriteString(s string) (int, error) {
 	// Fallback: the writer has not been initialized yet, or it has been initialized
 	// and it does not implement WriteString. We could in theory do something unsafe
 	// here but for now let's keep it simple and fallback to Write.
+	// TODO: in case the string is large, we should avoid allocating a full copy:
+	// instead we should copy the string in chunks.
 	return w.Write([]byte(s))
 }
 
