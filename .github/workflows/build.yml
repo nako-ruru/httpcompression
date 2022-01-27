@@ -27,5 +27,11 @@ jobs:
     - name: Test
       run: go test -v -race -coverprofile=coverage.txt -covermode=atomic ./...
 
+    - name: Profile memory
+      run:
+        go test -run=^$ -bench=. -short -memprofile mem.prof
+        go tool pprof -sample_index alloc_objects -top mem.prof
+        go tool pprof -sample_index alloc_space -top mem.prof
+
     - name: Codecov
       uses: codecov/codecov-action@v1.1.1

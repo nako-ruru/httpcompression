@@ -1120,9 +1120,16 @@ const (
 )
 
 func BenchmarkAdapter(b *testing.B) {
-	for _, size := range []int{100, 1000, 10000, 100000} {
+	comps := map[string]int{stdlibGzip: 9, klauspostGzip: 9, andybalholmBrotli: 11, googleCbrotli: 11, klauspostZstd: 4, valyalaGozstd: 22}
+	sizes := []int{100, 1000, 10000, 100000}
+	if testing.Short() {
+		comps = map[string]int{stdlibGzip: 9, andybalholmBrotli: 11}
+		sizes = []int{100, 1000, 100000}
+	}
+
+	for _, size := range sizes {
 		b.Run(fmt.Sprintf("%d", size), func(b *testing.B) {
-			for ae, maxq := range map[string]int{stdlibGzip: 9, klauspostGzip: 9, andybalholmBrotli: 11, googleCbrotli: 11, klauspostZstd: 4, valyalaGozstd: 22} {
+			for ae, maxq := range comps {
 				if size < DefaultMinSize {
 					maxq = 1
 				}
@@ -1131,9 +1138,11 @@ func BenchmarkAdapter(b *testing.B) {
 						b.Run("serial", func(b *testing.B) {
 							benchmark(b, false, size, ae, q)
 						})
-						b.Run("parallel", func(b *testing.B) {
-							benchmark(b, true, size, ae, q)
-						})
+						if !testing.Short() {
+							b.Run("parallel", func(b *testing.B) {
+								benchmark(b, true, size, ae, q)
+							})
+						}
 					})
 				}
 			}
@@ -1211,6 +1220,7 @@ func benchmark(b *testing.B, parallel bool, size int, ae string, d int) {
 		}
 	}
 
+	b.ReportAllocs()
 	b.ResetTimer()
 	if parallel {
 		b.RunParallel(func(pb *testing.PB) {
