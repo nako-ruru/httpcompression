@@ -71,9 +71,8 @@ func Adapter(opts ...Option) (func(http.Handler) http.Handler, error) {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			addVaryHeader(w.Header(), acceptEncoding)
 
-			accept := parseEncodings(r.Header.Get(acceptEncoding))
-			common := acceptedCompression(accept, c.compressor)
-			if len(common) == 0 {
+			encoding := encoding(r.Header.Get(acceptEncoding), c.compressor, c.prefer)
+			if encoding == "" {
 				h.ServeHTTP(w, r)
 				return
 			}
@@ -96,8 +95,7 @@ func Adapter(opts ...Option) (func(http.Handler) http.Handler, error) {
 			*gw = compressWriter{
 				ResponseWriter: w,
 				config:         c,
-				accept:         accept,
-				common:         common,
+				encoding:       encoding,
 				pool:           bufPool,
 			}
 			defer func() {

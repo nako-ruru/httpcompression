@@ -13,42 +13,45 @@ const (
 	defaultQValue = 1.0
 )
 
-// acceptedCompression returns the list of common compression scheme supported by client and server.
-func acceptedCompression(accept codings, comps comps) []string {
-	var s []string
-	// pick smallest N to do O(N) iterations
-	if len(accept) < len(comps) {
-		for k, v := range accept {
-			if v > 0 && comps[k].comp != nil {
-				s = append(s, k)
-			}
-		}
-	} else {
-		for k, v := range comps {
-			if v.comp != nil && accept[k] > 0 {
-				s = append(s, k)
-			}
-		}
-	}
-	return s
-}
+// encoding picks the content-encoding to use for the response
+func encoding(acceptEncoding string, compressors comps, prefer PreferType) string {
+	var bestEncoding string
+	var bestQvalue float64
+	var bestPriority int
 
-// parseEncodings attempts to parse a list of codings, per RFC 2616, as might
-// appear in an Accept-Encoding header. It returns a map of content-codings to
-// quality values.
-// Errors encountered during parsing the codings are ignored.
-//
-// See: http://tools.ietf.org/html/rfc2616#section-14.3.
-func parseEncodings(s string) codings {
-	c := make(codings)
-	for _, ss := range strings.Split(s, ",") {
-		coding, qvalue := parseCoding(ss)
-		if coding == "" {
+	for _, ss := range strings.Split(acceptEncoding, ",") {
+		encoding, qvalue := parseCoding(ss)
+		if encoding == "" {
 			continue
 		}
-		c[coding] = qvalue
+		if qvalue == 0 {
+			continue
+		}
+		compressor, ok := compressors[encoding]
+		if !ok {
+			continue
+		}
+
+		if bestEncoding == "" {
+			bestEncoding, bestQvalue, bestPriority = encoding, qvalue, compressor.priority
+		} else {
+			if prefer == PreferServer {
+				if bestPriority < compressor.priority ||
+					(bestPriority == compressor.priority && bestQvalue < qvalue) ||
+					(bestPriority == compressor.priority && bestQvalue == qvalue && strings.Compare(bestEncoding, encoding) < 0) {
+					bestEncoding, bestQvalue, bestPriority = encoding, qvalue, compressor.priority
+				}
+			} else {
+				if bestQvalue < qvalue ||
+					(bestQvalue == qvalue && bestPriority < compressor.priority) ||
+					(bestQvalue == qvalue && bestPriority == compressor.priority && strings.Compare(bestEncoding, encoding) < 0) {
+					bestEncoding, bestQvalue, bestPriority = encoding, qvalue, compressor.priority
+				}
+			}
+		}
 	}
-	return c
+
+	return bestEncoding
 }
 
 // parseCoding parses a single conding (content-coding with an optional qvalue),

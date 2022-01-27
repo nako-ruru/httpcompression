@@ -17,10 +17,9 @@ import (
 type compressWriter struct {
 	http.ResponseWriter
 
-	config config
-	accept codings
-	common []string
-	pool   *sync.Pool // pool of buffers (buf []byte); max size of each buf is maxBuf
+	config   config
+	encoding string
+	pool     *sync.Pool // pool of buffers (buf []byte); max size of each buf is maxBuf
 
 	w    io.Writer
 	enc  string
@@ -73,8 +72,7 @@ func (w *compressWriter) Write(b []byte) (int, error) {
 	// writes to defer the decision until we have more data.
 	if w.buf == nil && (ct != "" || len(w.config.contentTypes) == 0) && (cl > 0 || len(b) >= w.config.minSize) {
 		if ce == "" && (cl >= w.config.minSize || len(b) >= w.config.minSize) && handleContentType(ct, w.config.contentTypes, w.config.blacklist) {
-			enc := preferredEncoding(w.accept, w.config.compressor, w.common, w.config.prefer)
-			if err := w.startCompress(enc, b); err != nil {
+			if err := w.startCompress(w.encoding, b); err != nil {
 				return 0, err
 			}
 			return len(b), nil
@@ -111,8 +109,7 @@ func (w *compressWriter) Write(b []byte) (int, error) {
 				}
 			}
 			if handleContentType(ct, w.config.contentTypes, w.config.blacklist) {
-				enc := preferredEncoding(w.accept, w.config.compressor, w.common, w.config.prefer)
-				if err := w.startCompress(enc, *w.buf); err != nil {
+				if err := w.startCompress(w.encoding, *w.buf); err != nil {
 					return 0, err
 				}
 				return len(b), nil

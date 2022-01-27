@@ -1,7 +1,9 @@
 package httpcompression
 
 import (
+	"errors"
 	"io"
+	"strings"
 )
 
 // CompressorProvider is the interface for compression implementations.
@@ -33,6 +35,10 @@ type Flusher interface {
 // a specific request.
 func Compressor(contentEncoding string, priority int, compressor CompressorProvider) Option {
 	return func(c *config) error {
+		if contentEncoding == "" {
+			return errors.New("invalid content encoding")
+		}
+		contentEncoding = strings.ToLower(contentEncoding)
 		if compressor == nil {
 			delete(c.compressor, contentEncoding)
 			return nil
