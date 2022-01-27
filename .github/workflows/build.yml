@@ -30,7 +30,9 @@ jobs:
     - name: Profile memory
       run:
         go test -run=^$ -bench=. -short -memprofile mem.prof
+
         go tool pprof -sample_index alloc_objects -top mem.prof
+
         go tool pprof -sample_index alloc_space -top mem.prof
 
     - name: Codecov
