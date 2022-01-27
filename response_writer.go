@@ -302,10 +302,17 @@ func (w *compressWriter) recycleBuffer() {
 	if w.buf == nil {
 		return
 	}
-	buf := *w.buf
-	if cap(buf) > 0 && cap(buf) <= maxBuf {
-		*w.buf = buf[:0]
-		w.pool.Put(w.buf)
-	}
+	buf := w.buf
 	w.buf = nil
+	if cap(*buf) > maxBuf {
+		// If the buffer is too big, let's drop it to avoid
+		// keeping huge buffers alive in the pool. In this case
+		// we still recycle the pointer to the slice.
+		*buf = nil
+	}
+	if len(*buf) > 0 {
+		// Reset the buffer to zero length.
+		*buf = (*buf)[:0]
+	}
+	w.pool.Put(buf)
 }
