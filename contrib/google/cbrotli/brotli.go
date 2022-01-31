@@ -33,14 +33,7 @@ func (c *compressor) Get(w io.Writer) io.WriteCloser {
 	cw := &writer{
 		Writer: gw,
 	}
-	runtime.SetFinalizer(cw, func(cw *writer) {
-		go func() {
-			defer func() {
-				recover()
-			}()
-			_ = cw.Close()
-		}()
-	})
+	runtime.SetFinalizer(cw, finalizer)
 	return cw
 }
 
@@ -51,4 +44,18 @@ type writer struct {
 func (w *writer) Close() error {
 	defer runtime.SetFinalizer(w, nil)
 	return w.Writer.Close()
+}
+
+var finalizerHook func(io.WriteCloser)
+
+func finalizer(cw *writer) {
+	go func(cw *writer) {
+		defer func() {
+			if finalizerHook != nil {
+				finalizerHook(cw) // for testing only
+			}
+			recover()
+		}()
+		_ = cw.Close()
+	}(cw)
 }

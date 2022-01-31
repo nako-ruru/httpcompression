@@ -1,3 +1,4 @@
+//go:build race
 // +build race
 
 package cbrotli_test
@@ -10,7 +11,7 @@ import (
 	gcbrotli "github.com/google/brotli/go/cbrotli"
 )
 
-func TestZstdRace(t *testing.T) {
+func TestBrotliRace(t *testing.T) {
 	t.Parallel()
 	c, _ := cbrotli.New(gcbrotli.WriterOptions{})
 	internal.RaceTestCompressionProvider(c, 100)
