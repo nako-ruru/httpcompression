@@ -41,10 +41,3 @@ func Compressor(contentEncoding string, priority int, compressor CompressorProvi
 		return nil
 	}
 }
-
-func mustCompressor(contentEncoding string, priority int, compressor CompressorProvider, err error) Option {
-	if err != nil {
-		return errorOption(err)
-	}
-	return Compressor(contentEncoding, priority, compressor)
-}
