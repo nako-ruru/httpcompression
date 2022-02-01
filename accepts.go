@@ -19,17 +19,17 @@ func encoding(acceptEncoding string, compressors comps, prefer PreferType) strin
 	var bestQvalue float64
 	var bestPriority int
 
-	for _, ss := range strings.Split(acceptEncoding, ",") {
+	split(acceptEncoding, ",", func(ss string) {
 		encoding, qvalue := parseCoding(ss)
 		if encoding == "" {
-			continue
+			return
 		}
 		if qvalue == 0 {
-			continue
+			return
 		}
 		compressor, ok := compressors[encoding]
 		if !ok {
-			continue
+			return
 		}
 
 		if bestEncoding == "" {
@@ -49,9 +49,21 @@ func encoding(acceptEncoding string, compressors comps, prefer PreferType) strin
 				}
 			}
 		}
-	}
+	})
 
 	return bestEncoding
+}
+
+func split(s, sep string, fn func(string)) {
+	for len(s) > 0 {
+		idx := strings.Index(s, sep)
+		if idx < 0 {
+			fn(s)
+			return
+		}
+		fn(s[:idx])
+		s = s[idx+len(sep):]
+	}
 }
 
 // parseCoding parses a single conding (content-coding with an optional qvalue),

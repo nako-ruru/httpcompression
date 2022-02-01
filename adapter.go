@@ -23,8 +23,6 @@ const (
 	_range          = "Range"
 )
 
-type codings map[string]float64
-
 const (
 	// DefaultMinSize is the default minimum response body size for which we enable compression.
 	//
