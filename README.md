@@ -33,7 +33,7 @@ is significantly wider than the original package.**
 
 While no dedicated demo exists, the [demo website](https://regexp2go-demo.herokuapp.com/)
 for [regexp2go](https://github.com/CAFxX/regexp2go) internally 
-[uses](https://github.com/CAFxX/regexp2go/blob/master/internal/server.go)
+[uses](https://github.com/CAFxX/regexp2go/blob/main/internal/server.go)
 `httpcompression` to transparently compress responses.
 
 ## Install
