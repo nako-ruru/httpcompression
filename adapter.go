@@ -64,6 +64,14 @@ func Adapter(opts ...Option) (func(http.Handler) http.Handler, error) {
 		}, nil
 	}
 
+	if c.buffer > 0 {
+		buffer := withBuffer(c.buffer)
+		for n, nc := range c.compressor {
+			nc.comp = buffer(nc.comp)
+			c.compressor[n] = nc
+		}
+	}
+
 	bufPool := &sync.Pool{}
 	writerPool := &sync.Pool{}
 
@@ -145,6 +153,7 @@ func DefaultAdapter(opts ...Option) (func(http.Handler) http.Handler, error) {
 		BrotliCompressionLevel(brotli.DefaultCompression),
 		defaultZstandardCompressor(),
 		MinSize(DefaultMinSize),
+		Buffer(4096),
 	}
 	opts = append(defaults, opts...)
 	return Adapter(opts...)
@@ -157,6 +166,7 @@ type config struct {
 	blacklist    bool
 	prefer       PreferType
 	compressor   comps
+	buffer       int
 }
 
 type comps map[string]comp
@@ -237,6 +247,20 @@ func ZstandardCompressor(b CompressorProvider) Option {
 
 func NewDefaultGzipCompressor(level int) (CompressorProvider, error) {
 	return cgzip.New(cgzip.Options{Level: level})
+}
+
+// Buffer enables a buffer of the specified size before the compression logic.
+// This allows to compress data in larger chunks, lowering the overhead in case
+// the handler performs many small writes. Writes larger than the buffer size
+// will often bypass the buffer.
+func Buffer(size int) Option {
+	return func(c *config) error {
+		if size < 0 {
+			return fmt.Errorf("buffer size can not be negative: %d", size)
+		}
+		c.buffer = size
+		return nil
+	}
 }
 
 func defaultZstandardCompressor() Option {
