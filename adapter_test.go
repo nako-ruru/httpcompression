@@ -1235,6 +1235,7 @@ func benchmark(b *testing.B, parallel bool, size int, ae string, d int) {
 	handler := newTestHandler(
 		string(bin[:size]),
 		Compressor(ae, 100, enc),
+		Buffer(4096),
 	)
 
 	res := httptest.NewRecorder()
