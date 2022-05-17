@@ -9,5 +9,5 @@ require (
 	github.com/klauspost/pgzip v1.2.5
 	github.com/pierrec/lz4/v4 v4.1.14
 	github.com/stretchr/testify v1.7.0
-	github.com/valyala/gozstd v1.15.1
+	github.com/valyala/gozstd v1.17.0
 )
