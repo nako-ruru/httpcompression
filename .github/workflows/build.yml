@@ -25,7 +25,14 @@ jobs:
       run: go build -v ./...
   
     - name: Test
-      run: go test -race -count=5 -coverprofile=coverage.txt -covermode=atomic ./...
+      run:
+        go test -race -count=5 -coverprofile=coverage.txt -covermode=atomic ./...
+
+        (cd contrib/gin-gonic/gin    && go test -race)
+
+        (cd contrib/gofiber/fiber/v2 && go test -race)
+
+        (cd contrib/labstack/echo    && go test -race)
 
     - name: Profile memory
       run:
