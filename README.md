@@ -111,6 +111,16 @@ The `contrib/` directory contains a number of bundled implementations that are r
 | `brotli`           | [contrib/google/cbrotli](https://pkg.go.dev/github.com/CAFxX/httpcompression/contrib/google/cbrotli)         | [github.com/google/brotli](https://github.com/google/brotli)                | Requires brotli libraries to be installed | No         | cgo    | No      | Yes             |
 | `lz4`              | [contrib/pierrec/lz4](https://pkg.go.dev/github.com/CAFxX/httpcompression/contrib/pierrec/lz4)               | [github.com/pierrec/lz4/v4](https://github.com/pierrec/lz4)                 |                                           | No         | Go     | No      | No              |
 
+## Framework integration
+
+In addition to the default support for `net/http`, `httpcompression` provides adapters for the following web frameworks:
+
+| Framework                                                       | Adapter                                                                                                  |
+| --------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------- |
+| [github.com/gofiber/fiber/v2](https://github.com/gofiber/fiber) | [contrib/gofiber/fiber/v2](https://pkg.go.dev/github.com/CAFxX/httpcompression/contrib/gofiber/fiber/v2) |
+| [github.com/labstack/echo](https://github.com/labstack/echo)    | [contrib/labstack/echo](https://pkg.go.dev/github.com/CAFxX/httpcompression/contrib/labstack/echo)       |
+| [github.com/gin-gonic/gin](https://github.com/gin-gonic/gin)    | [contrib/gin-gonic/gin](https://pkg.go.dev/github.com/CAFxX/httpcompression/contrib/gin-gonic/gin)       |
+
 ## Benchmark
 
 See the [benchmark results](results.md) to get an idea of the relative performance and
