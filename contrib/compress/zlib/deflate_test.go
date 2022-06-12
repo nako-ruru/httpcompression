@@ -7,8 +7,8 @@ import (
 
 	stdzlib "compress/zlib"
 
-	"github.com/CAFxX/httpcompression"
-	"github.com/CAFxX/httpcompression/contrib/compress/zlib"
+	"github.com/nako-ruru/httpcompression"
+	"github.com/nako-ruru/httpcompression/contrib/compress/zlib"
 )
 
 var _ httpcompression.CompressorProvider = &zlib.Compressor{}

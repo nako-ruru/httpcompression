@@ -5,8 +5,8 @@ package brotli_test
 import (
 	"testing"
 
-	"github.com/CAFxX/httpcompression/contrib/andybalholm/brotli"
-	"github.com/CAFxX/httpcompression/contrib/internal"
+	"github.com/nako-ruru/httpcompression/contrib/andybalholm/brotli"
+	"github.com/nako-ruru/httpcompression/contrib/internal"
 )
 
 func TestZstdRace(t *testing.T) {

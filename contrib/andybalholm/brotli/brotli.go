@@ -5,8 +5,8 @@ import (
 	"io"
 	"sync"
 
-	"github.com/CAFxX/httpcompression/contrib/internal/utils"
 	"github.com/andybalholm/brotli"
+	"github.com/nako-ruru/httpcompression/contrib/internal/utils"
 )
 
 const (

@@ -1,4 +1,4 @@
-package httpcompression // import "github.com/CAFxX/httpcompression"
+package httpcompression // import "github.com/nako-ruru/httpcompression"
 
 import (
 	"compress/gzip"
@@ -7,10 +7,9 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/CAFxX/httpcompression/contrib/andybalholm/brotli"
-	cgzip "github.com/CAFxX/httpcompression/contrib/compress/gzip"
-	"github.com/CAFxX/httpcompression/contrib/compress/zlib"
-	"github.com/CAFxX/httpcompression/contrib/klauspost/zstd"
+	"github.com/nako-ruru/httpcompression/contrib/andybalholm/brotli"
+	cgzip "github.com/nako-ruru/httpcompression/contrib/compress/gzip"
+	"github.com/nako-ruru/httpcompression/contrib/compress/zlib"
 )
 
 const (
@@ -143,7 +142,6 @@ func DefaultAdapter(opts ...Option) (func(http.Handler) http.Handler, error) {
 		DeflateCompressionLevel(zlib.DefaultCompression),
 		GzipCompressionLevel(gzip.DefaultCompression),
 		BrotliCompressionLevel(brotli.DefaultCompression),
-		defaultZstandardCompressor(),
 		MinSize(DefaultMinSize),
 	}
 	opts = append(defaults, opts...)
@@ -230,21 +228,8 @@ func BrotliCompressor(b CompressorProvider) Option {
 	return Compressor(brotli.Encoding, -100, b)
 }
 
-// ZstandardCompressor is an option to specify a custom compressor factory for Zstandard.
-func ZstandardCompressor(b CompressorProvider) Option {
-	return Compressor(zstd.Encoding, -50, b)
-}
-
 func NewDefaultGzipCompressor(level int) (CompressorProvider, error) {
 	return cgzip.New(cgzip.Options{Level: level})
-}
-
-func defaultZstandardCompressor() Option {
-	zstdComp, err := zstd.New()
-	if err != nil {
-		return errorOption(fmt.Errorf("initializing zstd compressor: %w", err))
-	}
-	return ZstandardCompressor(zstdComp)
 }
 
 func errorOption(err error) Option {

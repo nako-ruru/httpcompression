@@ -5,8 +5,8 @@ import (
 	"io/ioutil"
 	"testing"
 
-	"github.com/CAFxX/httpcompression"
-	"github.com/CAFxX/httpcompression/contrib/andybalholm/brotli"
+	"github.com/nako-ruru/httpcompression"
+	"github.com/nako-ruru/httpcompression/contrib/andybalholm/brotli"
 
 	_brotli "github.com/andybalholm/brotli"
 )

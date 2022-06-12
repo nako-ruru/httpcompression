@@ -14,17 +14,10 @@ import (
 	"strconv"
 	"testing"
 
-	"github.com/CAFxX/httpcompression/contrib/andybalholm/brotli"
-	"github.com/CAFxX/httpcompression/contrib/google/cbrotli"
-	kpgzip "github.com/CAFxX/httpcompression/contrib/klauspost/gzip"
-	"github.com/CAFxX/httpcompression/contrib/klauspost/zstd"
-	"github.com/CAFxX/httpcompression/contrib/valyala/gozstd"
+	"github.com/nako-ruru/httpcompression/contrib/andybalholm/brotli"
 	"github.com/stretchr/testify/assert"
 
 	ibrotli "github.com/andybalholm/brotli"
-	gcbrotli "github.com/google/brotli/go/cbrotli"
-	kpzstd "github.com/klauspost/compress/zstd"
-	vzstd "github.com/valyala/gozstd"
 )
 
 const (
@@ -113,20 +106,6 @@ func TestGzipHandler(t *testing.T) {
 		assert.Equal(t, brotliStrLevel(testBody, brotli.DefaultCompression), resp.Body.Bytes())
 	}
 
-	// same, but with accept-encoding:zstd
-	{
-		req, _ := http.NewRequest("GET", "/whatever", nil)
-		req.Header.Set("Accept-Encoding", "zstd")
-		resp := httptest.NewRecorder()
-		handler.ServeHTTP(resp, req)
-		res := resp.Result()
-
-		assert.Equal(t, 200, res.StatusCode)
-		assert.Equal(t, "zstd", res.Header.Get("Content-Encoding"))
-		assert.Equal(t, "Accept-Encoding", res.Header.Get("Vary"))
-		assert.Equal(t, zstdStrLevel(testBody, kpzstd.SpeedDefault), resp.Body.Bytes())
-	}
-
 	// same, but with accept-encoding:gzip,br (br wins)
 	{
 		req, _ := http.NewRequest("GET", "/whatever", nil)
@@ -139,20 +118,6 @@ func TestGzipHandler(t *testing.T) {
 		assert.Equal(t, "br", res.Header.Get("Content-Encoding"))
 		assert.Equal(t, "Accept-Encoding", res.Header.Get("Vary"))
 		assert.Equal(t, brotliStrLevel(testBody, brotli.DefaultCompression), resp.Body.Bytes())
-	}
-
-	// same, but with accept-encoding:gzip,br,zstd (zstd wins)
-	{
-		req, _ := http.NewRequest("GET", "/whatever", nil)
-		req.Header.Set("Accept-Encoding", "gzip, br, zstd")
-		resp := httptest.NewRecorder()
-		handler.ServeHTTP(resp, req)
-		res := resp.Result()
-
-		assert.Equal(t, 200, res.StatusCode)
-		assert.Equal(t, "zstd", res.Header.Get("Content-Encoding"))
-		assert.Equal(t, "Accept-Encoding", res.Header.Get("Vary"))
-		assert.Equal(t, zstdStrLevel(testBody, kpzstd.SpeedDefault), resp.Body.Bytes())
 	}
 
 	// same, but with accept-encoding:gzip,br;q=0.5 (gzip wins)
@@ -1049,7 +1014,7 @@ func TestWriteStringEquivalence(t *testing.T) {
 }
 
 func TestAcceptRanges(t *testing.T) {
-	// Tests for https://github.com/nytimes/gziphandler/issues/83 https://github.com/CAFxX/httpcompression/issues/6
+	// Tests for https://github.com/nytimes/gziphandler/issues/83 https://github.com/nako-ruru/httpcompression/issues/6
 	t.Parallel()
 
 	cases := map[string]struct {
@@ -1140,16 +1105,11 @@ func TestShortFirstWrite(t *testing.T) {
 
 const (
 	stdlibGzip        = "stdlib-gzip"
-	googleCbrotli     = "google-cbrotli"
 	andybalholmBrotli = "andybalholm-brotli"
-	klauspostGzip     = "klauspost-gzip"
-	klauspostPgzip    = "klauspost-pgzip"
-	klauspostZstd     = "klauspost-zstd"
-	valyalaGozstd     = "valyala-gozstd"
 )
 
 func BenchmarkAdapter(b *testing.B) {
-	comps := map[string]int{stdlibGzip: 9, klauspostGzip: 9, andybalholmBrotli: 11, googleCbrotli: 11, klauspostZstd: 4, valyalaGozstd: 22}
+	comps := map[string]int{stdlibGzip: 9, andybalholmBrotli: 11}
 	sizes := []int{100, 1000, 10000, 100000}
 	if testing.Short() {
 		comps = map[string]int{stdlibGzip: 9, andybalholmBrotli: 11}
@@ -1197,14 +1157,6 @@ func brotliStrLevel(s string, lvl int) []byte {
 	return b.Bytes()
 }
 
-func zstdStrLevel(s string, lvl kpzstd.EncoderLevel) []byte {
-	var b bytes.Buffer
-	w, _ := kpzstd.NewWriter(&b, kpzstd.WithEncoderLevel(lvl))
-	io.WriteString(w, s)
-	w.Close()
-	return b.Bytes()
-}
-
 func benchmark(b *testing.B, parallel bool, size int, ae string, d int) {
 	bin, err := ioutil.ReadFile("testdata/benchmark.json")
 	if err != nil {
@@ -1215,16 +1167,8 @@ func benchmark(b *testing.B, parallel bool, size int, ae string, d int) {
 	switch ae {
 	case stdlibGzip:
 		enc, err = NewDefaultGzipCompressor(d)
-	case klauspostGzip:
-		enc, err = kpgzip.New(kpgzip.Options{Level: d})
 	case andybalholmBrotli:
 		enc, err = brotli.New(brotli.Options{Quality: d})
-	case googleCbrotli:
-		enc, err = cbrotli.New(gcbrotli.WriterOptions{Quality: d})
-	case klauspostZstd:
-		enc, err = zstd.New(kpzstd.WithEncoderLevel(kpzstd.EncoderLevel(d)))
-	case valyalaGozstd:
-		enc, err = gozstd.New(vzstd.WriterParams{CompressionLevel: d})
 	}
 	if err != nil {
 		b.Fatal(err)

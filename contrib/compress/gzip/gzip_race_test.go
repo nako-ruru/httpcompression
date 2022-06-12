@@ -6,8 +6,8 @@ package gzip_test
 import (
 	"testing"
 
-	"github.com/CAFxX/httpcompression/contrib/compress/gzip"
-	"github.com/CAFxX/httpcompression/contrib/internal"
+	"github.com/nako-ruru/httpcompression/contrib/compress/gzip"
+	"github.com/nako-ruru/httpcompression/contrib/internal"
 )
 
 func TestZstdRace(t *testing.T) {

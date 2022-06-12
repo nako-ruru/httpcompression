@@ -39,7 +39,7 @@ for [regexp2go](https://github.com/CAFxX/regexp2go) internally
 ## Install
 
 ```bash
-go get github.com/CAFxX/httpcompression
+go get github.com/nako-ruru/httpcompression
 ```
 
 ## Usage
@@ -60,7 +60,7 @@ package main
 import (
     "io"
     "net/http"
-    "github.com/CAFxX/httpcompression"
+    "github.com/nako-ruru/httpcompression"
 )
 
 func main() {

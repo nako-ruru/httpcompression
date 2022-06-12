@@ -6,8 +6,8 @@ package zlib_test
 import (
 	"testing"
 
-	"github.com/CAFxX/httpcompression/contrib/compress/zlib"
-	"github.com/CAFxX/httpcompression/contrib/internal"
+	"github.com/nako-ruru/httpcompression/contrib/compress/zlib"
+	"github.com/nako-ruru/httpcompression/contrib/internal"
 )
 
 func TestZstdRace(t *testing.T) {

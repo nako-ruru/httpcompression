@@ -5,7 +5,7 @@ import (
 	"runtime"
 	"sync"
 
-	"github.com/CAFxX/httpcompression"
+	"github.com/nako-ruru/httpcompression"
 )
 
 func RaceTestCompressionProvider(c httpcompression.CompressorProvider, n int) {
